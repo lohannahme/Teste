@@ -1,0 +1,1684 @@
+fileFormatVersion: 2
+guid: 188cbb35ad56b1447b5f9e597a3066df
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ArCondicionado
+    second: {fileID: 2100000, guid: 1580bed26a30fef45a7064206d795ac9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ArameFarpado
+    second: {fileID: 2100000, guid: 4e8c29972549a0e468c7d1621bd310c0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Arbusto1
+    second: {fileID: 2100000, guid: 92e1b1a960e2acc468bfe67ab1ab82d8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Arbusto2
+    second: {fileID: 2100000, guid: 1304add082d649641bf019ee82b1a9e9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Arvore_Copa
+    second: {fileID: 2100000, guid: f89bc406904048a4eb08a76a352c7304, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Arvore_Copa_Madeira
+    second: {fileID: 2100000, guid: 8ea7ba7c84829104282604c68551ae96, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Arvore_Grande_Copa
+    second: {fileID: 2100000, guid: b704ce20a961bb64bbb6fce3d2aa2ae4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Arvore_Grande_Madeira
+    second: {fileID: 2100000, guid: 9c759005b8a9c2540855eca683c33dff, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Arvore_Pequena_Folhas
+    second: {fileID: 2100000, guid: c868634b599816942a03b40de9f1381a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Arvore_Pequena_Madeira
+    second: {fileID: 2100000, guid: 0da41a55c30896445807e3b85ee9fa34, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Asfalto
+    second: {fileID: 2100000, guid: 08d79fc8ed0f9594080bc7e09ab1ec3b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BaseViga
+    second: {fileID: 2100000, guid: fa741c2f688b29e4da4a9fbface59f68, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BaseViga_Desgastada
+    second: {fileID: 2100000, guid: a2c2b5efae9dc8e469da5b2d2d46cee6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BaseViga_Desgastada_Amarelo
+    second: {fileID: 2100000, guid: df33c73c89b837343b0526010fa055f0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BaseViga_Desgastada_Azul
+    second: {fileID: 2100000, guid: f969d419ef726644aaf0202e11357eaa, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Bueiro
+    second: {fileID: 2100000, guid: 3ac87f7c1a3ceb7489318d3f0305fa02, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Bueiro_Ralo
+    second: {fileID: 2100000, guid: 27d7f02e0d9c9244882aaf20563c58f6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Caixa_Fusiveis
+    second: {fileID: 2100000, guid: 240f2633febce02419842afd796ff39f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Carro_Azul
+    second: {fileID: 2100000, guid: b201b66ae0b815547a686b6013ae21c7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Carro_Van
+    second: {fileID: 2100000, guid: 9b6cfb2591f6e9142ab7a7b0c87b4440, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CasaBeje
+    second: {fileID: 2100000, guid: 541df278ced952d4880c715bcffdfdb3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CasaBeje_Janela
+    second: {fileID: 2100000, guid: d3fa76f05599bd548b635d39f8f0fb29, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CasaBeje_Porta1
+    second: {fileID: 2100000, guid: 50300990667fb77499625c835acd7f1f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CasaBeje_Porta2
+    second: {fileID: 2100000, guid: c903ddb3368630247b0d6d08189b1d9d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CasaBeje_Porta3
+    second: {fileID: 2100000, guid: 5b4ce71644a0b79479795d44624a66f4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CasaBeje_Varanda
+    second: {fileID: 2100000, guid: 946dd92002dc1a14cb5c218abc7ec9b9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CasaBeje_Varanda2
+    second: {fileID: 2100000, guid: d2c5cc15d9091b9438b73cf51e167cd2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CasaDoisAndares
+    second: {fileID: 2100000, guid: 251b28454efb22a46af4378a683a6d5d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CasaDoisAndaresMarquise
+    second: {fileID: 2100000, guid: 01df3b0f9c8b2e242bd303b867a2682c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CasaDoisAndares_Azul
+    second: {fileID: 2100000, guid: aa56fedf62ba805419900fa02be86c9d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CasaDoisAndares_Ladrilho
+    second: {fileID: 2100000, guid: 58f6a5c8c28abe04e933893a2b2f6c7a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CasaDoisAndares_Lateral
+    second: {fileID: 2100000, guid: b8af152b159134146a654f6a978bbc21, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CasaLimiteFigueira
+    second: {fileID: 2100000, guid: 1c4e773988957cc45aa2651dfe393eb5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CasaLimiteFigueira2
+    second: {fileID: 2100000, guid: e5e21d027c4b01a4f92bdd31fa8fc80e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CasaLimite_PedroII
+    second: {fileID: 2100000, guid: 9de1f0b938e08d34cb56239d231c218e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CasaPosLimite
+    second: {fileID: 2100000, guid: b426b5f53e7455d429384ac51da8a186, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Ch\xE3o1"
+    second: {fileID: 2100000, guid: 39822aa5d0ba76e44ab2bbe8f68feeeb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Ch\xE3o2"
+    second: {fileID: 2100000, guid: eb248616fc4087e4ca8076ffb5e2122f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Ch\xE3o3"
+    second: {fileID: 2100000, guid: ec94c11437966a542ac1a0e8609464b3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Fundo_Imagem_Vila
+    second: {fileID: 2100000, guid: a323d8459115aca49a5f8c0ba6d5c1da, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Fundo_Plantas
+    second: {fileID: 2100000, guid: c483450fadcecfb438a414eadc36e633, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Grade
+    second: {fileID: 2100000, guid: 8c5f384853daeef45802880ab27ca023, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Grade_Carrinho.png
+    second: {fileID: 2100000, guid: e96f3db3567ec1e488169330b5126eb6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Grama_Plantinhas
+    second: {fileID: 2100000, guid: 1b01710f19b9fc24baf7f9349245ab00, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Janela_LojaEsquinaVerde
+    second: {fileID: 2100000, guid: cdf8f60173832ed4db216e7ded197493, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Janela_Pr\xE9dioGrande1"
+    second: {fileID: 2100000, guid: 918bf797f89a4c548af57ffad9d1486f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Janela_Pr\xE9dioGrande2"
+    second: {fileID: 2100000, guid: 9edc4ea29cfcc1e43a2db3b4cbfc903e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Janela_Pr\xE9dioGrande3"
+    second: {fileID: 2100000, guid: e78d42c305e164c4a8ffb8acef547629, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Janela_Pr\xE9dioGrande4"
+    second: {fileID: 2100000, guid: 3a30180cfecfbd64e99f03c876b24902, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lixo_CaixaATT
+    second: {fileID: 2100000, guid: 587063fc71516b74b9957e89b696165e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lixo_Chao_Pilha
+    second: {fileID: 2100000, guid: 09502bd8cb6ea5f498827bd9223d2222, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: LojaEsquinaVerde
+    second: {fileID: 2100000, guid: 1234c0524e9b86245a9af2390161bbeb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: MeioFio
+    second: {fileID: 2100000, guid: e7677533184792941a6c488246033237, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "MetalCa\xE7amba_Azul"
+    second: {fileID: 2100000, guid: 523b2a39ce1d3324b9899d2b009cc0c0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "MetalCa\xE7amba_Vermelha"
+    second: {fileID: 2100000, guid: 008eb910b5a3a7d43819454a68f765f7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "MetalCa\xE7amba_Vermelha_Lixo"
+    second: {fileID: 2100000, guid: 4c324f8487e167d4fa63bdb6abfdbe1f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Metal_Carrinho
+    second: {fileID: 2100000, guid: dda6921fc18392f4dbb748b7b47a5bd9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Outdoor_CarrosImportados
+    second: {fileID: 2100000, guid: 5405f8c160e368048b9688c004df26ed, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Outdoor_LojaEsquinaVerde
+    second: {fileID: 2100000, guid: df93e4087f2f6d9498bc74a3a09df0c7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Outdoor_PredioTijolo
+    second: {fileID: 2100000, guid: 978e141434627024e9f125cfee30925b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Outdoor_Pr\xE9dioGrande"
+    second: {fileID: 2100000, guid: 3293ba915a1b3224eacfcbd0b53c533c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Outdoor_Teclub
+    second: {fileID: 2100000, guid: 8e259fd1bee4dbb4290f8c921b48b159, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Parede_CasasLimitePedroII
+    second: {fileID: 2100000, guid: a451f298e75383f41af7815ac4f32e9c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Placa_N\xE3oEstacione"
+    second: {fileID: 2100000, guid: d96e37ad8cbf56c4cb97b76816d6aaae, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Placa_N\xE3oEstacione.001"
+    second: {fileID: 2100000, guid: 0f39e827acf8865448e9a31f33c6ce81, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Planta1
+    second: {fileID: 2100000, guid: cb6c0439bd9db844c99caf7198541673, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Planta2
+    second: {fileID: 2100000, guid: 685c7193f6eaf56478082905e45474d4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Planta3
+    second: {fileID: 2100000, guid: f74af3d41c8ca554d90672992f180488, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Planta_Buraco
+    second: {fileID: 2100000, guid: 9ca36e136cb4097419defdd4443c1eee, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Planta_PredioTijolo
+    second: {fileID: 2100000, guid: ffe9b1d505ed1eb43a9ca8aa7d761efb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Planta_PredioTijoloColorido
+    second: {fileID: 2100000, guid: d36123cb34ec4bc44b214ae604c0c771, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Planta_PredioTijoloColorido2
+    second: {fileID: 2100000, guid: 6a29adc7f8fbbc24b8b2aef8168a77f1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PontoBusaoATT
+    second: {fileID: 2100000, guid: bd392ce1f46e7024dba39f81da178227, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Porta_LimiteFigueira
+    second: {fileID: 2100000, guid: 05243f29cc4dbe14d9a34429cb87af79, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Porta_LimiteFigueira2
+    second: {fileID: 2100000, guid: 6e447ba98566cd646b4f8639af62d338, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Porta_LimiteFigueira3
+    second: {fileID: 2100000, guid: 6f63d88ffaa3ea74cbf9635381b90e56, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Porta_LojaEsquinaVerde
+    second: {fileID: 2100000, guid: 3d853bacad32d134d9c409441c811c1a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Porta_LojaEsquinaVerde2
+    second: {fileID: 2100000, guid: 59e7fc050f6b5bc459155310a1b83025, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Porta_LojaEsquinaVerde3
+    second: {fileID: 2100000, guid: a1858a3b41c010d459031d7ec4002e4a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Porta_PredioDoisAndares_Azul
+    second: {fileID: 2100000, guid: 18e0d1931bfe9e84e9ac314be0b05145, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Porta_PredioDoisAndares_Preto
+    second: {fileID: 2100000, guid: 98736ed945a7f0f4fb2328535dcf36db, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Porta_PredioGrande_Cinza
+    second: {fileID: 2100000, guid: d41cbcc4a1db9cb4c99e417d2d193455, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Porta_PredioGrande_Solda
+    second: {fileID: 2100000, guid: 8d22e455e9aed024bb16e8e4c32f197b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Porta_PredioGrande_Verde
+    second: {fileID: 2100000, guid: c8993a982bdd8c44483d5f1eef299cac, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Porta_Pr\xE9dioGrande_Residencia"
+    second: {fileID: 2100000, guid: c4f97b2b8102ad14f855ae74ee4c7cb5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Porta_Pr\xE9dioGrande_Residencia2"
+    second: {fileID: 2100000, guid: f3c48455c88b7174fa17c8c1be31fae9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Portao_GaragemGrande
+    second: {fileID: 2100000, guid: ba8795c5d7cd80246b6f7a427cfa4b84, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Portao_Vila
+    second: {fileID: 2100000, guid: 524f38f0cfdaaac4bb3251366e1d3662, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Poste_ Luz_Ilumina\xE7\xE3o"
+    second: {fileID: 2100000, guid: f2b30a019e26809438cba00f48e7e30b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Poste_ Metal_Ilumina\xE7\xE3o"
+    second: {fileID: 2100000, guid: d6108c0a475a5034e82a392ef4f5f9e9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Poste_ Metal_Ilumina\xE7\xE3o2"
+    second: {fileID: 2100000, guid: 3b9b6845b86b6154bbc46f6b98806c2b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Poste_Concreto
+    second: {fileID: 2100000, guid: 83dfc73a5820709409306ca6fa82974c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Poste_Metal
+    second: {fileID: 2100000, guid: 5fb2015b7ca710f4b8ee8b8a4812b6fa, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Poste_Sinal.png
+    second: {fileID: 2100000, guid: 31e6b0f79c6d83242850a820e55d2ad1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioColorido_Branco
+    second: {fileID: 2100000, guid: 77ce9af0fc21ba943aaf5cbc449a4d50, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioColorido_DetalhesAzul1
+    second: {fileID: 2100000, guid: 6a71e1103c6d5cf49bdfafea7740bf73, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioColorido_DetalhesAzul2
+    second: {fileID: 2100000, guid: f3af70499ca16e14788914b3e813a9a6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioColorido_Grade
+    second: {fileID: 2100000, guid: bd92e89b575bc8346a220030773a46f6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioColorido_Janela
+    second: {fileID: 2100000, guid: e4f7cbefc693e11488fc476fd330558f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioColorido_Janela_Vasculante
+    second: {fileID: 2100000, guid: 68aa7a14f63617f46adfcdf1b3b22c15, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioColorido_PortaGrande
+    second: {fileID: 2100000, guid: 2e3cd8fca916ba546970036b55ad00b1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioColorido_Vendese
+    second: {fileID: 2100000, guid: dba66bc6c5c72934895f966462c90cf1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioColorido_Verde
+    second: {fileID: 2100000, guid: 193712b3df394dc4c919b733693e2059, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioManuel_Azul
+    second: {fileID: 2100000, guid: e359187f28157dc478ca50bb3f87ff7a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioManuel_Branco
+    second: {fileID: 2100000, guid: 37307aa6888de4440a6f7ca305dc81d2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioManuel_Lateral
+    second: {fileID: 2100000, guid: 79157ea4d754f684b8ea4283aa2d55ce, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioManuel_Porta
+    second: {fileID: 2100000, guid: 1f5d62f3cf1cd9649bbe1e60da3d0128, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioManuel_Porta2
+    second: {fileID: 2100000, guid: 945ddb214e0d5ee42941d3cba1b89398, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioManuel_Residencia
+    second: {fileID: 2100000, guid: d4728ff8006669841adebe435fee19ea, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioPortao_Janelas
+    second: {fileID: 2100000, guid: c293a49ddce60db4f8d202304c4abdcb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioPortao_Porta
+    second: {fileID: 2100000, guid: ad5df114c81c2494fa55fdf992d08012, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "PredioPort\xE3o_Azulejo"
+    second: {fileID: 2100000, guid: 9e13d5100067be140a9e40673afb3906, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "PredioPort\xE3o_AzulejoBnraco"
+    second: {fileID: 2100000, guid: ab5a1920dab382d42aea87fc3ae2d1c2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "PredioPort\xE3o_ParedeBranca"
+    second: {fileID: 2100000, guid: 847e813aa56b35b49a10553a91311736, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioSemente_Beje
+    second: {fileID: 2100000, guid: 969b916c65f11f14cb88dd19c6165b35, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioSemente_Branco
+    second: {fileID: 2100000, guid: 7c24dee5f550bb2418ac62fabe42c6fe, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioSemente_Concreto
+    second: {fileID: 2100000, guid: 8a3fc6ae7ebd36347a0ce4ee056a3ee0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioSemente_Janela
+    second: {fileID: 2100000, guid: 32cef01cce68ffe45aa3772880ada445, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioSemente_Porta
+    second: {fileID: 2100000, guid: 534f5dd134c380b4d856a625221379e1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioSemente_Varanda
+    second: {fileID: 2100000, guid: 92d52f93afdb34143a4f37a87cd7e0ed, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioTijolo_Amarelo
+    second: {fileID: 2100000, guid: 3edfe9f6e1f5bf04c8384854800efa06, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioTijolo_Janela
+    second: {fileID: 2100000, guid: 5488b0298f1eaef4982a7cb91c6a5c45, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioTijolo_Marquise
+    second: {fileID: 2100000, guid: 4ed60495dc329374a947cbe514f91359, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioTijolo_Pichacao
+    second: {fileID: 2100000, guid: 18876dc8a8965d846b28b58cf3b53d7c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PredioTijolo_Porta
+    second: {fileID: 2100000, guid: 4cad89c541cbd8c4184f74dc0d573e83, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Predio_PortaPequena
+    second: {fileID: 2100000, guid: 74f58bfd2eee6e440a0909fb519ead80, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Pr\xE9dioColorido_Laranja"
+    second: {fileID: 2100000, guid: 7cbb7f305ee9e604eb228029f5d27964, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Pr\xE9dioGrande_Amarerlo"
+    second: {fileID: 2100000, guid: 5d45bf97a4b9bba499357582c56378f4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Pr\xE9dioGrande_Cinza"
+    second: {fileID: 2100000, guid: 667993bddd6277941b26fd94d1955179, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Pr\xE9dioGrande_CorBase"
+    second: {fileID: 2100000, guid: 9d4e47bb538072843a32ef282b504b76, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Pr\xE9dioGrande_Piso"
+    second: {fileID: 2100000, guid: 8c5e6d175eb2d8941b10aaa31c51a7e6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Pr\xE9dioGrande_Verde"
+    second: {fileID: 2100000, guid: 4b4390d99a579f149ab81874de316dfc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: "Pr\xE9dio_Silhueta"
+    second: {fileID: 2100000, guid: bf2c1cf9dd4f3c74bb4e1c7acd8abbd1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Saco_Lixo_Branco
+    second: {fileID: 2100000, guid: 4841f3aec647fb9439d6da6052257c48, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Saco_Lixo_Esverdeado
+    second: {fileID: 2100000, guid: 586e43b8685ce5b45b243d4b3cd259dc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Saco_Lixo_Marrom
+    second: {fileID: 2100000, guid: 4399638da70779049ac1aa5929ebe586, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Silhuetas
+    second: {fileID: 2100000, guid: abf2b5fb0009ff84ab343ad4f1f88d8f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Tapume
+    second: {fileID: 2100000, guid: 2534fcb020350f9448627423a995b693, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Telhadetijolo_LimiteFigueira
+    second: {fileID: 2100000, guid: eb1230f877bd76d41903cd41efeb1cf4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Telhado_LimiteFIgueira
+    second: {fileID: 2100000, guid: ba716a8e1cb67024a919eb4b7eb95fce, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Textura_Antena_Corpo
+    second: {fileID: 2100000, guid: 2b00c49ecea0a6e438c8ec0b438342fe, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Textura_Antena_Ponta
+    second: {fileID: 2100000, guid: 4a1fcd3d82e01c44d8f473463f483f8e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Textura_Grama
+    second: {fileID: 2100000, guid: 4d9e746083f31ce43b398d8764c66013, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Toldo_PredioGrande
+    second: {fileID: 2100000, guid: afed35f7cf087544389b59d011a104ce, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Viaduto_Lateral
+    second: {fileID: 2100000, guid: f6dbb2a9e1ba488449764ee5b780a197, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Viaduto_LateralEmbaixo
+    second: {fileID: 2100000, guid: 5a7ffc79e40794247905d6e9845c0c50, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Viaduto_Vigas
+    second: {fileID: 2100000, guid: 7a06f318a7b97da489a0f887a6ab13e1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Viaduto_VigasLateral
+    second: {fileID: 2100000, guid: e91ed6e815bcdaa46bb87268658d4559, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Viga_Ferrugem
+    second: {fileID: 2100000, guid: 107fff494b24a7447ad7f746dc57dbca, type: 2}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Ar Condicionado
+    second: {fileID: 2800000, guid: b39758313bf62b54b8cf969ceb37d0dc, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Arbusto1
+    second: {fileID: 2800000, guid: 0de70d1c3baee05488e29c752866e4cf, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Arbusto2
+    second: {fileID: 2800000, guid: ce043a6e507df9340aabea7af894e0d6, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Arvore_Copa
+    second: {fileID: 2800000, guid: aaadfd2d9414a374aa89269d514ab5c7, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Arvore_Copa_Madeira
+    second: {fileID: 2800000, guid: f7bdb8352f5aeac41a2afcc83ce96383, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Arvore_Grande_Copa
+    second: {fileID: 2800000, guid: 86a87c046cb87854d941e199d041f78b, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Arvore_Grande_Madeira
+    second: {fileID: 2800000, guid: 902719b6d92bbc6468c66f81034789cc, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Arvore_Pequena_Folhas
+    second: {fileID: 2800000, guid: 09c0f33155633694bbb24fcf7b4d2aab, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Arvore_Pequena_Galhos
+    second: {fileID: 2800000, guid: 1b366610926b66444b90372b300261d5, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Arvore_Pequena_Madeira
+    second: {fileID: 2800000, guid: f25cf55a8678fa64682cd7529a4d8485, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Buero_Rua
+    second: {fileID: 2800000, guid: 842ecec6ce3f20d4ab90e58dd93cf857, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Caixa_Fusiveis
+    second: {fileID: 2800000, guid: 059f3b06b3555f74cb2dd8a2687e7eaf, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Carro_Azul
+    second: {fileID: 2800000, guid: 05f6c4c13961aaa4996f6545ad8d3e9d, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Carro_Van
+    second: {fileID: 2800000, guid: 6a5e6c72b68b3344097833daf6a04724, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Fundo_Imagem_Vila
+    second: {fileID: 2800000, guid: bc1c437a664b7dc4291f9e480411e2e1, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Fundo_Plantas
+    second: {fileID: 2800000, guid: 51455fbc82f096742bece1a160f15e4a, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Grade_Carrinho
+    second: {fileID: 2800000, guid: ec563d2cd82a9614dbe0ce9189f20d46, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Grama_Plantinhas
+    second: {fileID: 2800000, guid: 03b0399d083c5734492afe71731bc426, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Janela_CasaBeje
+    second: {fileID: 2800000, guid: dbb7b4751c738d649999623d88b7ccfb, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Janela_LojaEsquinaVerde
+    second: {fileID: 2800000, guid: 6fae0fa9c69d765429fd3951b70c01f2, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Janela_PredioColorido
+    second: {fileID: 2800000, guid: 1d48a5e5f385ca043a682fce9a0e9251, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Janela_PredioColorido_Vasculante
+    second: {fileID: 2800000, guid: 70d9f1784e0a36a4bb1950e57f685734, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Janela_Pr\xE9dioGrande1"
+    second: {fileID: 2800000, guid: 19a2b8279546b6f419d091b4dab1c0c5, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Janela_Pr\xE9dioGrande2"
+    second: {fileID: 2800000, guid: 1c520f092e4c5074984de663db1febba, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Janela_Pr\xE9dioGrande3"
+    second: {fileID: 2800000, guid: e9fd40eb80a0ab743a0441cb8664cf65, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Janela_Pr\xE9dioGrande4"
+    second: {fileID: 2800000, guid: 2e510996b24eb0f4b9e7773abbe55936, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Janela_Tijolos
+    second: {fileID: 2800000, guid: d285cb74888479b4abe4aeba82c0d0a9, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Lixo_Caixa
+    second: {fileID: 2800000, guid: 4019ce432e328ac4cac143092229dc05, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Lixo_Ch\xE3o_Pilha"
+    second: {fileID: 2800000, guid: 2ce8d60fa1608e34386bb5c9a2b022d6, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "MetalCa\xE7amba_Azul"
+    second: {fileID: 2800000, guid: 39287ba33d3e0804da7bc3d814bd5ad5, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "MetalCa\xE7amba_Vermelha"
+    second: {fileID: 2800000, guid: ad4955d8f9a0a104e8136154e435f3a0, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "MetalCa\xE7amba_Vermelha_Lixo"
+    second: {fileID: 2800000, guid: 78b958873e594064f9c900381b37c1a5, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Metal_Carrinho
+    second: {fileID: 2800000, guid: f054bce933ce119409ff3142dc8985f3, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Azulejo
+    second: {fileID: 2800000, guid: 5e130922e6d68b34e814c05aebdf8559, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Porta_CasaBeje1
+    second: {fileID: 2800000, guid: 628fc50e72e8aa54f9bd59c2549e70ed, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Porta_CasaBeje2
+    second: {fileID: 2800000, guid: 49600aa709ff14f4984943c792d3513c, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Porta_CasaBeje3
+    second: {fileID: 2800000, guid: 2fcf48e71e505d4419e24baec3be5b62, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Porta_LojaEsquinaVerde
+    second: {fileID: 2800000, guid: acf89a476d05dc144946cafbd0397762, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Porta_PredioColorido
+    second: {fileID: 2800000, guid: a2d47c31d740e65479fa737ab5d65ed7, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Porta_PredioDoisAndares_Azul
+    second: {fileID: 2800000, guid: 38d334087a59f85429b313d1124dbf81, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Porta_PredioDoisAndares_Preto
+    second: {fileID: 2800000, guid: a10cc403f95385647b15263ff8382f25, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Porta_PredioGrande_Cinza
+    second: {fileID: 2800000, guid: 8b8719a77703a9c45bf5a74be5dd9c28, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Porta_PredioGrande_Solda
+    second: {fileID: 2800000, guid: f82c3d7fac0bf27448d0c2fa6a485afd, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_PredioSemente_Concreto
+    second: {fileID: 2800000, guid: ed98f2474f8dc29448777fbebe98555a, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_PredioTijolo_Porta
+    second: {fileID: 2800000, guid: 8e5780d09fb2f7d4db6cd3c318e28923, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Textura_CasaBeje
+    second: {fileID: 2800000, guid: dd22d6dc01f66d24a826d76ab97e4b16, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Textura_CasaDoisAndares
+    second: {fileID: 2800000, guid: c77d9b0af17859d4b85090b85dcf7e34, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Textura_CasaDoisAndares_Ladrilho
+    second: {fileID: 2800000, guid: 5d2113b7ef6fd0847a07f20c38a93f28, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Textura_CasaDoisAndares_Lateral
+    second: {fileID: 2800000, guid: 4c5b49ffe51bbd641937043065fedb78, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Textura_LimiteFigueira
+    second: {fileID: 2800000, guid: eb410f972f2906145a4de3eb1b60c147, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Textura_LojaEsquinaVerde
+    second: {fileID: 2800000, guid: 22406c0d81c01894da8309c60d9a562e, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Textura_ParedeBranca1
+    second: {fileID: 2800000, guid: 97e79c34a345d8c4ebb232af80d5ed40, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Textura_PredioManuel_Azul
+    second: {fileID: 2800000, guid: a7cf65fe54cc90940a9fda88aa4ec209, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "NormalMap_Textura_Pr\xE9dioColorido"
+    second: {fileID: 2800000, guid: de96dbe732c93224f8d0a9d5d3c26e6e, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "NormalMap_Textura_Pr\xE9dioGrande"
+    second: {fileID: 2800000, guid: adfa9477cc4a38b46ae8b10f79e835ad, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "NormalMap_Textura_Pr\xE9dioGrande_Piso"
+    second: {fileID: 2800000, guid: e377ad852efeb24468aa94adf632c885, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: NormalMap_Textura_Tijolos
+    second: {fileID: 2800000, guid: 893c40a2388680745924ce336a96a41d, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Outdoor_CarrosImportados
+    second: {fileID: 2800000, guid: 859c9d084c82b3d4c83409cb0c2d28da, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Outdoor_LojaEsquinaVerde
+    second: {fileID: 2800000, guid: fdbc924fcaf85ad4a8cfc81f0bb78e3b, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Outdoor_Pr\xE9dioGrande"
+    second: {fileID: 2800000, guid: c66ce68522782ac46a4ed2de9f569769, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Outdoor_TecLub
+    second: {fileID: 2800000, guid: c657dddcd08f8ea4b8edb14c43384d91, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Outdoor_Tijolo
+    second: {fileID: 2800000, guid: 1f3f03eaaad5522459c02af79cdb5992, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Placa_PontoBusao
+    second: {fileID: 2800000, guid: 1648c01c539e7924c938b626ebbe7208, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Planta_Buraco
+    second: {fileID: 2800000, guid: 1881ad0602624d743840c43eedf4dd47, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Planta_PredioTijolo
+    second: {fileID: 2800000, guid: 9299b496d1624c445adee1c7cd8c8ceb, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Planta_PredioTijoloColorido
+    second: {fileID: 2800000, guid: c7b39a5433d77a24480d7cb7703a0412, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Planta_PredioTijoloColorido2
+    second: {fileID: 2800000, guid: 8071e574727a7b64993edaa3344e3c9a, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Plantas1
+    second: {fileID: 2800000, guid: 37dc59c8b0f38464e8d0bbe5fba2594a, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Plantas2
+    second: {fileID: 2800000, guid: fd77995eb4677134d8b66896c615b9f2, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Plantas3
+    second: {fileID: 2800000, guid: 77f3ded495f15e24cb035ea66b79dee6, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Porta_CasaBeje1
+    second: {fileID: 2800000, guid: 1dbd2483b2db7fa4a8cc2946f842f2ec, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Porta_CasaBeje2
+    second: {fileID: 2800000, guid: bd72c8e77a4aeec45bc776cf4b5be0a2, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Porta_CasaBeje3
+    second: {fileID: 2800000, guid: f6edd8d0d4c9e4846b1e1fb12c61185f, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Porta_LimiteFigueira
+    second: {fileID: 2800000, guid: 4952c3c840c94434d82e0c4996b38316, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Porta_LimiteFigueira2
+    second: {fileID: 2800000, guid: 278c44e8eaea5ab4d8265494b3d8a3b8, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Porta_LimiteFigueira3
+    second: {fileID: 2800000, guid: 7f78d56a16f8e394ba51707788114c01, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Porta_LojaEsquinaVerde
+    second: {fileID: 2800000, guid: 67cf26567f5709349b9df69b9885b580, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Porta_LojaEsquinaVerde2
+    second: {fileID: 2800000, guid: 7141aebf820eadd46b1f32c7bfea58b5, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Porta_LojaEsquinaVerde3
+    second: {fileID: 2800000, guid: 7a3602e87de107b4c878a791f11ddac7, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Porta_PredioColorido
+    second: {fileID: 2800000, guid: 3fe02055e729e5d4e80394b00e430141, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Porta_PredioDoisAndares_Azul
+    second: {fileID: 2800000, guid: e4a6fee9c91f7294b96303549313800c, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Porta_PredioDoisAndares_Preto
+    second: {fileID: 2800000, guid: 59cd952a397ec144ca20bf24110ac148, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Porta_PredioGrande_Cinza
+    second: {fileID: 2800000, guid: 0e727b48627815d4e9da940236e191e8, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Porta_PredioGrande_Solda
+    second: {fileID: 2800000, guid: b80bf77d4ac8a6144a385cd4bd693798, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Porta_PredioGrande_Verde
+    second: {fileID: 2800000, guid: 2c13e39d4b7b4b64683bb28a0b9db41f, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Porta_PredioManuel_Residencia
+    second: {fileID: 2800000, guid: 9098e6433eda5334cae81342a2bc74cf, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Porta_Preta
+    second: {fileID: 2800000, guid: bab81834dde4aa442abda750336aa61a, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Porta_Pr\xE9dioGrande_Residencia"
+    second: {fileID: 2800000, guid: c855276925f9c7448a91a47229e7971b, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Porta_Pr\xE9dioGrande_Residencia2"
+    second: {fileID: 2800000, guid: b10b54c815386f8488bbe1c08fbb9bef, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Porta_Pr\xE9dioPortao"
+    second: {fileID: 2800000, guid: 711399735cbe4a148b75261e9640b060, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Portao_GaragemGrande
+    second: {fileID: 2800000, guid: ece33737be458e2459a8edc78263c0a5, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Portao_Vila
+    second: {fileID: 2800000, guid: 1defb132d24a6fb439f950319eaaf0ad, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Poste_ Luz_Ilumina\xE7\xE3o"
+    second: {fileID: 2800000, guid: 29087f79e87e951448ed7379e36f6c1f, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Poste_ Metal_Ilumina\xE7\xE3o"
+    second: {fileID: 2800000, guid: 07d0048b783c0cb4ca61f90cfd9ed851, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Poste_ Metal_Ilumina\xE7\xE3o2"
+    second: {fileID: 2800000, guid: 136839f13b455314c9cacdb4185896f3, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Poste_Sinal
+    second: {fileID: 2800000, guid: a59edb4d2e5f61749ba485858cbcfb39, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: PredioColorido_Grade
+    second: {fileID: 2800000, guid: 814a8903e423c184db09304569710d11, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: PredioColorido_Vendese
+    second: {fileID: 2800000, guid: 007935fa392916f418255d080fa78424, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: PredioManuel_Porta
+    second: {fileID: 2800000, guid: e7dcded4e5d150040989fbe6d22a6fc4, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: PredioManuel_Porta2
+    second: {fileID: 2800000, guid: 4db083f8b1f6b3f449aebf103a11bf65, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: PredioPortao_Janelas
+    second: {fileID: 2800000, guid: cb381ec5e4ec2ae4087ecc71f749a070, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: PredioSemente_Janela
+    second: {fileID: 2800000, guid: 8892bc320a411ac4b8d2092d05bf0af2, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: PredioSemente_Porta
+    second: {fileID: 2800000, guid: 0df5d848440f3d64189d17c57750fe03, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: PredioSemente_Varanda
+    second: {fileID: 2800000, guid: caf4d9ca3786d7c49a75c4540bdfb756, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: PredioTijolo_Porta
+    second: {fileID: 2800000, guid: 0e4efbc68a65d3b4f9b118d09b6c234d, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Saco_Lixo_Branco
+    second: {fileID: 2800000, guid: be71241c9f81acd4e8d70c99d88cdfab, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Saco_Lixo_Esverdeado
+    second: {fileID: 2800000, guid: 4ff8355cc318c90439f8fc7ad6eeff20, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Saco_Lixo_Marrom
+    second: {fileID: 2800000, guid: 078a22daf8ee92341a42551b649295dd, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Tampa de buero
+    second: {fileID: 2800000, guid: 46cb2b4ccaa6f7c429ec17b39daccd58, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Tapume_Obra
+    second: {fileID: 2800000, guid: e36f4c62d47c2174bb79b4513c5f5414, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_Antena_Corpo
+    second: {fileID: 2800000, guid: f1f04ff63492a1f4cacffa38ddcc285d, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_Antena_Ponta
+    second: {fileID: 2800000, guid: 2e91c91bdc146f24aa9f23888a40ad7c, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_ArameFarpado
+    second: {fileID: 2800000, guid: aa1a2a299b1b12d4a8bd63197e4aa82f, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_Asfalto
+    second: {fileID: 2800000, guid: a6fd236d3e69c1643a9c4e09939e376e, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_Azulejo2
+    second: {fileID: 2800000, guid: 89a674f6b873f6841852b0ed15813843, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_AzulejoBranco
+    second: {fileID: 2800000, guid: 5b9c838a23e4b574ebce97adc0ade9c7, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_CasaBeje
+    second: {fileID: 2800000, guid: 0d2213fb119d07045856f9a86ecec470, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_CasaBeje_Varanda
+    second: {fileID: 2800000, guid: 73658bd1a68165b44bbb9168e115c497, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_CasaBeje_Varanda2
+    second: {fileID: 2800000, guid: 1230146aef7bf02499e95deaa727939c, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_CasaDoisAndares
+    second: {fileID: 2800000, guid: 87bc75391559b284ea9abb15f1641193, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_CasaDoisAndares_Azul
+    second: {fileID: 2800000, guid: 32e055456219090449da1645b7d8ed25, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_CasaDoisAndares_Ladrilho
+    second: {fileID: 2800000, guid: 3cf182eeb6aeb9b448a8fa74abee5745, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_CasaDoisAndares_Lateral
+    second: {fileID: 2800000, guid: 9403f4032f61f2149b9e6fcc62c25bb1, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_CasaDoisAndares_Marquise
+    second: {fileID: 2800000, guid: 3d3e17d5db3a6bc43abbc21a6aed9c00, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_CasaLimite_PedroII
+    second: {fileID: 2800000, guid: 45191b2aac8330748bc435d317068674, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_CasaPosLimite
+    second: {fileID: 2800000, guid: b536bcd80c4722845a54a2d821565452, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_CasasLimitePedroII
+    second: {fileID: 2800000, guid: 928deea6619e97c4fa1f9852029e3445, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_Chao
+    second: {fileID: 2800000, guid: ee0b2a23c2869dd46998dde0e5e1141a, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_Chao2
+    second: {fileID: 2800000, guid: e9a7585e168f66647900bb063e786456, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_Chao3
+    second: {fileID: 2800000, guid: 8c03b5dbe920a864cbdcbc53a8b93b3a, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_Ferrugem2
+    second: {fileID: 2800000, guid: f5ab9cc06f5397e4fa1100092ab870ae, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_Grama
+    second: {fileID: 2800000, guid: 2880d00652109b64fb3bada192b00aa0, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_LimiteFigueira
+    second: {fileID: 2800000, guid: e04063f0834e43345a6c7045c5687607, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_LimiteFigueira_Telhado
+    second: {fileID: 2800000, guid: f1aa07942fbdad04aa5f4eda0cffefc5, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_LojaEsquinaVerde
+    second: {fileID: 2800000, guid: 418a6b82d82073c43b03f8f5cbfff9f0, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_MeioFio
+    second: {fileID: 2800000, guid: ddf53240d4f704140a1edf49dcc9e1a0, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_ParedeBeje
+    second: {fileID: 2800000, guid: 5ddb6db6558bef440bcd898362935689, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_ParedeBranca1
+    second: {fileID: 2800000, guid: 1896bd95af7bca041b19a8e22b250e4d, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_ParedeBranca2
+    second: {fileID: 2800000, guid: ed618c95c2fa9bb49ad9898040e2b5e0, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_PosteConcreto
+    second: {fileID: 2800000, guid: cfa06787119c4554d80e13b221258d1f, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_PosteMetal
+    second: {fileID: 2800000, guid: 84efd20844c8fcd4f89585d42b094fbf, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_PredioColorido_DetalhesAzuis1
+    second: {fileID: 2800000, guid: 8abf8927bf9f797458a99d8210755461, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_PredioColorido_DetalhesAzuis2
+    second: {fileID: 2800000, guid: 20b8ae073bf3b3749bc0a0c7c4b0dfe2, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_PredioManuel_Azul
+    second: {fileID: 2800000, guid: 2b67f2f9dfafa7948a0fb2e1c56d3c71, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_PredioManuel_Lateral
+    second: {fileID: 2800000, guid: 6f2758a473187a445b3bd4f171fc5c03, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_PredioSemente_Concreto
+    second: {fileID: 2800000, guid: 16107c25b409a4d4aad86796e2240d6c, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_PredioTijolo_Amarelo
+    second: {fileID: 2800000, guid: 5fd16bed474bdbc45989f0fc96194769, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_PredioTijolo_Marquise
+    second: {fileID: 2800000, guid: a8a5c58fab5347a4ab7a15a832c799ef, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_PredioTijolo_Pichacao
+    second: {fileID: 2800000, guid: 2cbb015fddde95845b707c9a60b97cab, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Textura_Pr\xE9dioColorido_Branco"
+    second: {fileID: 2800000, guid: ccd1cd161210acd44b6ce81c1f7c2ccc, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Textura_Pr\xE9dioColorido_Laranja"
+    second: {fileID: 2800000, guid: 7c3a6ae93b12ad8479f00ae4faa78f72, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Textura_Pr\xE9dioColorido_Verde"
+    second: {fileID: 2800000, guid: 029ac0c5181c33a44a752d6975665583, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Textura_Pr\xE9dioGrande"
+    second: {fileID: 2800000, guid: f95f445a3ee5c504bb56bab158f1bcdd, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Textura_Pr\xE9dioGrande_Cinza"
+    second: {fileID: 2800000, guid: ed5bc80b753e04a44b65c110c2cba224, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Textura_Pr\xE9dioGrande_Piso"
+    second: {fileID: 2800000, guid: ee5df5d76c33fbd409632133f35a8993, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Textura_Pr\xE9dioGrande_Verde"
+    second: {fileID: 2800000, guid: 6e43bbc75f32f1e48ab70be747d42bce, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: "Textura_Pr\xE9dio_Silhueta"
+    second: {fileID: 2800000, guid: c224fa65287e65d4097bd74a88309d98, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_VigaBase_Concreto
+    second: {fileID: 2800000, guid: 0f49a67ee4beb5040b0c8f58d32ca85d, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_VigaBase_ConcretoQuebrado
+    second: {fileID: 2800000, guid: 0d0e5a3246078ff4885e9bae2b969271, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_VigaBase_ConcretoQuebrado_Amarelo
+    second: {fileID: 2800000, guid: e9a56e61f5977814a9723d7753659cb2, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Textura_VigaBase_ConcretoQuebrado_Azul
+    second: {fileID: 2800000, guid: d89aac6be4c6bd9479803c9aa0a9ed83, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Viaduto_LateralAtt
+    second: {fileID: 2800000, guid: 59b130fcf93803444ac545d044134d07, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Viaduto_LateralEmbaixo
+    second: {fileID: 2800000, guid: 2fc343c1c70311a48951c45e9a994345, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Viaduto_ParteDebaixo
+    second: {fileID: 2800000, guid: 73f3fd1b01ee98d4fae9b8fcfa179538, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Viaduto_VigasLateral
+    second: {fileID: 2800000, guid: a4734ab385cf7b34586b4352d05d9298, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: placa de nao estacione
+    second: {fileID: 2800000, guid: 3342b13918981b145b828cac5a2905db, type: 3}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 0
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importPhysicalCameras: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    nodeNameCollisionStrategy: 1
+    fileIdsGeneration: 2
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    keepQuads: 0
+    weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    meshOptimizationFlags: -1
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 1
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+    strictVertexDataChecks: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
+  importAnimation: 1
+  humanDescription:
+    serializedVersion: 3
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    globalScale: 1
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
+  animationType: 2
+  humanoidOversampling: 1
+  avatarSetup: 0
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  importBlendShapeDeformPercent: 1
+  remapMaterialsIfMaterialImportModeIsNone: 0
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
