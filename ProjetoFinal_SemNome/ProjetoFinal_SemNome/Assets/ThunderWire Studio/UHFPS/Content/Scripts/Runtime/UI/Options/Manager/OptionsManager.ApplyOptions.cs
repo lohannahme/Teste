@@ -45,8 +45,6 @@ namespace UHFPS.Runtime
         // 0.1 - Min Resolution, 2 - Max Resolution
         private void ApplyRenderScaleOption(string optionName, float value, bool isChanged)
         {
-            Debug.Log(value);
-
             value = Mathf.Clamp(value, 0.1f, 2f);
             if (isChanged) URPAsset.renderScale = value;
             serializableData[optionName] = new(value);

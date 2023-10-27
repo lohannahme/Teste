@@ -18,9 +18,9 @@ namespace UHFPS.Runtime.States
             return new PushingPlayerState(machine, this);
         }
 
-        public override string GetStateKey() => PlayerStateMachine.PUSHING_STATE;
+        public override string StateKey => PlayerStateMachine.PUSHING_STATE;
 
-        public override string ToString() => "Pushing";
+        public override string Name => "Generic/Pushing";
 
         public class PushingPlayerState : FSMPlayerState
         {
@@ -55,9 +55,7 @@ namespace UHFPS.Runtime.States
 
             private float movementSpeed;
             private float prevRotationX;
-
-            private float t = 0f;
-            private float tVel;
+            private float elapsedTime;
 
             private Vector3 CameraForward => cameraLook.RotationX * Vector3.forward;
 
@@ -94,15 +92,15 @@ namespace UHFPS.Runtime.States
                 float walkMultiplier = movableObject.WalkMultiplier;
                 float lookMultiplier = movableObject.LookMultiplier;
 
-                oldSensitivity = cameraLook.sensitivityX;
+                oldSensitivity = cameraLook.SensitivityX;
 
                 float walkSpeed = machine.PlayerBasicSettings.WalkSpeed;
                 float walkMul = Mathf.Min(1f, walkSpeed * 10f / weight);
                 float lookMul = Mathf.Min(1f, oldSensitivity * 10f / weight);
 
                 movementSpeed = walkSpeed * walkMul * walkMultiplier;
-                if (allowRotation) cameraLook.sensitivityX = oldSensitivity * lookMul * lookMultiplier;
-                else cameraLook.sensitivityX = 0f;
+                if (allowRotation) cameraLook.SensitivityX = oldSensitivity * lookMul * lookMultiplier;
+                else cameraLook.SensitivityX = 0f;
 
                 Vector3 forwardGlobal = forwardAxis.Convert();
                 Vector3 forwardLocal = movable.Direction(forwardAxis);
@@ -122,7 +120,7 @@ namespace UHFPS.Runtime.States
 
                 startingPosition = Position;
                 machine.Motion = Vector3.zero;
-                t = 0f;
+                elapsedTime = 0f;
 
                 audioSource.volume = 0f;
                 audioSource.Play();
@@ -131,6 +129,7 @@ namespace UHFPS.Runtime.States
                 playerItems.IsItemsUsable = false;
 
                 gameManager.ShowControlsInfo(true, State.ControlExit);
+                footstepsSystem.enabled = false;
             }
 
             public override void OnStateExit()
@@ -140,7 +139,7 @@ namespace UHFPS.Runtime.States
                 movableObject.FadeSoundOut();
                 cameraLook.ResetCustomLerp();
                 cameraLook.ResetLookLimits();
-                cameraLook.sensitivityX = oldSensitivity;
+                cameraLook.SensitivityX = oldSensitivity;
                 targetPosition = Vector3.zero;
                 isMoved = false;
 
@@ -148,11 +147,13 @@ namespace UHFPS.Runtime.States
                     interactCollider.enabled = true;
 
                 gameManager.ShowControlsInfo(false, null);
+                footstepsSystem.enabled = true;
             }
 
             public override void OnStateUpdate()
             {
-                t = Mathf.SmoothDamp(t, 1.001f, ref tVel, State.ToMovableTime);
+                elapsedTime += Time.deltaTime;
+                float t = GameTools.SmootherStep(0f, 1f, elapsedTime / State.ToMovableTime);
 
                 if (t < 1f && !isMoved)
                 {
@@ -219,18 +220,19 @@ namespace UHFPS.Runtime.States
                 if (allowRotation)
                 {
                     Vector3 movableForward = forwardAxis.Convert();
-                    Quaternion rotation = Quaternion.FromToRotation(movableForward, CameraForward);
+                    Quaternion rotation = Quaternion.LookRotation(movableForward, Vector3.up);
+                    Quaternion result = Quaternion.LookRotation(rotation * CameraForward);
 
-                    if (CanRotate(rotation)) prevRotationX = cameraLook.rotation.x;
-                    else cameraLook.rotation.x = prevRotationX;
+                    if (CanRotate(result)) prevRotationX = cameraLook.LookRotation.x;
+                    else cameraLook.LookRotation.x = prevRotationX;
 
-                    movable.rotation = rotation;
+                    movable.rotation = result;
                 }
             }
 
             private bool CanMove(Vector3 direction)
             {
-                Vector3 newPosition = movable.position + direction * movementSpeed * Time.deltaTime;
+                Vector3 newPosition = movable.position + movementSpeed * Time.deltaTime * direction;
                 newPosition.y += 0.01f;
 
                 return !Physics.CheckBox(newPosition, collider.size / 2, movable.rotation, collisionMask);
@@ -240,6 +242,7 @@ namespace UHFPS.Runtime.States
             {
                 Quaternion newRotation = rotation * movable.rotation;
                 Vector3 position = movable.position + Vector3.up * 0.01f;
+
                 return !Physics.CheckBox(position, collider.size / 2, newRotation, collisionMask);
             }
 
@@ -247,8 +250,8 @@ namespace UHFPS.Runtime.States
             {
                 return new Transition[]
                 {
-                    Transition.To<WalkingStateAsset>(() => InputManager.ReadButtonOnce("Jump", Controls.JUMP)),
-                    Transition.To<DeathStateAsset>(() => IsDead)
+                    Transition.To(PlayerStateMachine.WALK_STATE, () => InputManager.ReadButtonOnce("Jump", Controls.JUMP)),
+                    Transition.To(PlayerStateMachine.DEATH_STATE, () => IsDead)
                 };
             }
         }

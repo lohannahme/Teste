@@ -22,12 +22,12 @@ namespace UHFPS.Runtime
             OnOpenContainer?.Invoke();
 
             GameTools.PlayOneShot3D(transform.position, OpenSound);
-            if(Animator != null) Animator.SetBool(OpenParameter, true);
+            if (Animator != null) Animator.SetBool(OpenParameter, true);
         }
 
         public override void OnStorageClose()
         {
-            if(CloseWithAnimation) GameTools.PlayOneShot3D(transform.position, CloseSound);
+            if (CloseWithAnimation) GameTools.PlayOneShot3D(transform.position, CloseSound);
             if (Animator != null) Animator.SetBool(OpenParameter, false);
             OnCloseContainer?.Invoke();
         }

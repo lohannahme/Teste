@@ -176,14 +176,23 @@ namespace UHFPS.Editors
 
                         if (inputEvent.PowerComponent.PowerType == PowerType.Input)
                         {
+                            SerializedProperty inputLight = input.FindPropertyRelative("InputLight");
                             SerializedProperty onConnected = input.FindPropertyRelative("OnConnected");
                             SerializedProperty onDisconnected = input.FindPropertyRelative("OnDisconnected");
 
                             if (EditorDrawing.BeginFoldoutBorderLayout(input, new GUIContent($"[{ALPHA[powerComp.PowerID - 1]}, {powerComp.PowerDirection}, {powerComp.PowerID}] Input Events")))
                             {
-                                EditorGUILayout.PropertyField(onConnected);
+                                EditorGUILayout.PropertyField(inputLight);
                                 EditorGUILayout.Space(1f);
-                                EditorGUILayout.PropertyField(onDisconnected);
+
+                                if (EditorDrawing.BeginFoldoutBorderLayout(onConnected, new GUIContent("Events")))
+                                {
+                                    EditorGUILayout.PropertyField(onConnected);
+                                    EditorGUILayout.Space(1f);
+                                    EditorGUILayout.PropertyField(onDisconnected);
+                                    EditorDrawing.EndBorderHeaderLayout();
+                                }
+
                                 EditorDrawing.EndBorderHeaderLayout();
                             }
                         }
@@ -300,13 +309,12 @@ namespace UHFPS.Editors
 
                     // change power type and direction
                     int powerTypeEnumCount = Enum.GetValues(typeof(PowerType)).Length;
-                    powerComponent.PowerType = (PowerType)((int)powerType + 1 > powerTypeEnumCount - 1 ? 0 : (int)powerType + 1);
+                    powerComponent.PowerType = (PowerType)((int)(powerType + 1) % powerTypeEnumCount);
                     powerComponent.PowerDirection = direction;
 
                     // assign power id
                     if (powerComponent.PowerType != PowerType.None)
                     {
-                        // assign power id of unassigned alphabet id
                         for (int i = 0; i < ALPHA.Length; i++)
                         {
                             if (!Target.PowerFlow.Any(x => x.PowerType == powerComponent.PowerType && x.PowerID == i + 1))
@@ -315,19 +323,19 @@ namespace UHFPS.Editors
                                 break;
                             }
                         }
-
-                        if(!Target.InputEvents.Any(x => x.PowerComponent == powerComponent))
-                        {
-                            Target.InputEvents.Add(new ElectricalCircuitPuzzle.PowerInputEvents()
-                            {
-                                PowerComponent = powerComponent
-                            });
-                        }
                     }
                     else
                     {
-                        // reset power id to default value
                         powerComponent.PowerID = 0;
+                    }
+
+                    // update the input events list
+                    if (powerComponent.PowerType == PowerType.Input && !Target.InputEvents.Any(x => x.PowerComponent == powerComponent))
+                    {
+                        Target.InputEvents.Add(new ElectricalCircuitPuzzle.PowerInputEvents() { PowerComponent = powerComponent });
+                    }
+                    else if (powerComponent.PowerType == PowerType.None)
+                    {
                         Target.InputEvents.RemoveAll(x => x.PowerComponent.PowerID == 0);
                     }
 

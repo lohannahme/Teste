@@ -54,7 +54,7 @@ namespace UHFPS.Runtime
 
         private void Awake()
         {
-            if (!SaveGameManager.IsGameJustLoaded)
+            if (!SaveGameManager.GameWillLoad)
                 InitializeHealth((int)StartHealth, (int)MaxHealth);
         }
 

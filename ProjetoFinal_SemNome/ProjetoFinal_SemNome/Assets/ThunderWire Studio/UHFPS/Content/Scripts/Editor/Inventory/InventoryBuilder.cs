@@ -181,6 +181,8 @@ namespace UHFPS.Editors
 
         private void OnAddNewItem()
         {
+            tempBuilderData.AssetObject.ApplyModifiedProperties();
+
             string newGuid = GameTools.GetGuid();
             asset.Items.Add(new InventoryAsset.ReferencedItem()
             {
@@ -314,7 +316,7 @@ namespace UHFPS.Editors
                     // item grid view
                     using (new EditorDrawing.IconSizeScope(14))
                     {
-                        GUIContent itemViewTitle = EditorGUIUtility.TrTextContentWithIcon("Item Grid View", "GridLayoutGroup Icon");
+                        GUIContent itemViewTitle = EditorGUIUtility.TrTextContentWithIcon("Item View", "GridLayoutGroup Icon");
                         float previewBoxSize = EditorGUIUtility.singleLineHeight * 3 + EditorGUIUtility.standardVerticalSpacing * 2;
                         Rect itemViewRect = EditorGUILayout.GetControlRect(false, 18f + 13f + previewBoxSize);
                         EditorDrawing.DrawHeaderWithBorder(ref itemViewRect, itemViewTitle, 18f, true);
@@ -366,7 +368,7 @@ namespace UHFPS.Editors
                         EditorGUILayout.Space(EditorGUIUtility.standardVerticalSpacing);
 
                         // drop object
-                        GUIContent itemObjectTitle = EditorGUIUtility.TrTextContentWithIcon("Item Object Reference", "Prefab On Icon");
+                        GUIContent itemObjectTitle = EditorGUIUtility.TrTextContentWithIcon("Object Reference", "Prefab On Icon");
                         using (new EditorDrawing.BorderBoxScope(itemObjectTitle, roundedBox: true))
                         {
                             EditorGUILayout.PropertyField(property.itemObject);
@@ -379,9 +381,11 @@ namespace UHFPS.Editors
                     EditorDrawing.DrawClassBorderFoldout(property.settings, new GUIContent("Settings"));
 
                     // properties
+                    EditorGUILayout.Space(1f);
                     EditorDrawing.DrawClassBorderFoldout(property.properties, new GUIContent("Properties"));
 
                     // usable settings
+                    EditorGUILayout.Space(1f);
                     bool isUsable = property.settings.FindPropertyRelative("isUsable").boolValue;
                     if(isUsable && EditorDrawing.BeginFoldoutBorderLayout(property.usableSettings, new GUIContent("Usable Settings")))
                     {
@@ -404,6 +408,7 @@ namespace UHFPS.Editors
                     }
 
                     // combine settings
+                    EditorGUILayout.Space(1f);
                     if (EditorDrawing.BeginFoldoutBorderLayout(property.combineSettings, new GUIContent("Combine Settings"), 18f))
                     {
                         EditorGUILayout.LabelField("Combinations: " + property.combineSettings.arraySize, EditorStyles.miniBoldLabel);
@@ -413,21 +418,33 @@ namespace UHFPS.Editors
                             DrawCombination(property, i);
                         }
 
-                        EditorGUILayout.Space(EditorGUIUtility.standardVerticalSpacing);
+                        EditorGUILayout.Space(2f);
+                        EditorDrawing.Separator();
+                        EditorGUILayout.Space(2f);
 
-                        if (GUILayout.Button("Add Combination"))
+                        EditorGUILayout.BeginHorizontal();
                         {
-                            int size = property.combineSettings.arraySize++;
-                            SerializedProperty partnerElement = property.combineSettings.GetArrayElementAtIndex(size);
-                            SerializedProperty partnerID = partnerElement.FindPropertyRelative("combineWithID");
-                            partnerID.stringValue = string.Empty;
-                            MirrorCombination(null, partnerElement); // clear new combination values
+                            GUILayout.FlexibleSpace();
+                            {
+                                Rect addSectionRect = EditorGUILayout.GetControlRect(GUILayout.Width(120f));
+                                if (GUI.Button(addSectionRect, "Add Combination"))
+                                {
+                                    int size = property.combineSettings.arraySize++;
+                                    SerializedProperty partnerElement = property.combineSettings.GetArrayElementAtIndex(size);
+                                    SerializedProperty partnerID = partnerElement.FindPropertyRelative("combineWithID");
+                                    partnerID.stringValue = string.Empty;
+                                    MirrorCombination(null, partnerElement); // clear new combination values
+                                }
+                            }
+                            GUILayout.FlexibleSpace();
                         }
+                        EditorGUILayout.EndHorizontal();
 
                         EditorDrawing.EndBorderHeaderLayout();
                     }
 
                     // properties
+                    EditorGUILayout.Space(1f);
                     EditorDrawing.DrawClassBorderFoldout(property.localizationSettings, new GUIContent("Localization Settings"));
 
                     EditorGUILayout.Space(EditorGUIUtility.standardVerticalSpacing);
@@ -493,9 +510,16 @@ namespace UHFPS.Editors
         {
             SerializedProperty arrayProperty = property.combineSettings;
             SerializedProperty element = arrayProperty.GetArrayElementAtIndex(index);
+
+            SerializedProperty requiredCurrentAmount = element.FindPropertyRelative("requiredCurrentAmount");
+            SerializedProperty requiredSecondAmount = element.FindPropertyRelative("requiredSecondAmount");
+            SerializedProperty resultItemAmount = element.FindPropertyRelative("resultItemAmount");
+
             SerializedProperty combineWithID = element.FindPropertyRelative("combineWithID");
             SerializedProperty resultCombineID = element.FindPropertyRelative("resultCombineID");
             SerializedProperty playerItemIndex = element.FindPropertyRelative("playerItemIndex");
+
+            SerializedProperty isCrafting = element.FindPropertyRelative("isCrafting");
             SerializedProperty keepAfterCombine = element.FindPropertyRelative("keepAfterCombine");
             SerializedProperty eventAfterCombine = element.FindPropertyRelative("eventAfterCombine");
             SerializedProperty selectAfterCombine = element.FindPropertyRelative("selectAfterCombine");
@@ -508,106 +532,134 @@ namespace UHFPS.Editors
             GUIContent headerGUI = new GUIContent($"Combination {index}");
             if (EditorDrawing.BeginFoldoutBorderLayout(element, headerGUI, out Rect headerRect, 18f, false))
             {
-                // combine with id field
-                Rect combineWithRect = EditorGUILayout.GetControlRect();
-                combineWithRect = EditorGUI.PrefixLabel(combineWithRect, new GUIContent("Combine With Item"));
-                combineWithRect.xMax -= 80f;
-
-                GUIContent combineWithGUI = new GUIContent("Set Combination Partner");
-                if(partnerProperty != null) combineWithGUI = new GUIContent(partnerProperty.title.stringValue);
-
-                // combine with button
-                if (GUI.Button(combineWithRect, combineWithGUI, EditorStyles.miniButton))
+                using (new EditorDrawing.BorderBoxScope())
                 {
-                    ItemProperty[] itemProperties = tempBuilderData.ItemProperties.Select(x => x.Value).ToArray();
-                    ItemPicker itemPicker = new ItemPicker(new AdvancedDropdownState(), itemProperties);
-                    itemPicker.OnItemPressed += obj =>
-                    {
-                        combineWithID.stringValue = obj.GUID;
-                        tempBuilderData.ItemsArray.serializedObject.ApplyModifiedProperties();
-                    };
+                    EditorGUILayout.LabelField("Item Settings", EditorStyles.miniBoldLabel);
 
-                    Rect dropdownRect = combineWithRect;
-                    dropdownRect.width = 250;
-                    itemPicker.Show(dropdownRect);
-                }
+                    // combine with id field
+                    Rect combineWithRect = EditorGUILayout.GetControlRect();
+                    combineWithRect = EditorGUI.PrefixLabel(combineWithRect, new GUIContent("Combine With Item"));
+                    combineWithRect.xMax -= 80f;
 
-                // combine with mirror button
-                Rect mirrorBtnRect = combineWithRect;
-                mirrorBtnRect.xMin = mirrorBtnRect.xMax;
-                mirrorBtnRect.xMax += 80f;
+                    GUIContent combineWithGUI = new GUIContent("Set Combination Partner");
+                    if (partnerProperty != null) combineWithGUI = new GUIContent(partnerProperty.title.stringValue);
 
-                using (new EditorGUI.DisabledScope(partnerProperty == null || property.GUID == combineWithID.stringValue))
-                {
-                    if (GUI.Button(mirrorBtnRect, new GUIContent("Mirror", "Mirror combination with partner item."), EditorStyles.miniButton))
-                    {
-                        bool addNew = true;
-                        for (int i = 0; i < partnerProperty.combineSettings.arraySize; i++)
-                        {
-                            SerializedProperty partnerElement = partnerProperty.combineSettings.GetArrayElementAtIndex(i);
-                            SerializedProperty partnerID = partnerElement.FindPropertyRelative("combineWithID");
-                            if (partnerID.stringValue.Equals(property.GUID))
-                            {
-                                MirrorCombination(element, partnerElement);
-                                addNew = false;
-                                break;
-                            }
-                        }
-
-                        if (addNew)
-                        {
-                            int size = partnerProperty.combineSettings.arraySize++;
-                            SerializedProperty partnerElement = partnerProperty.combineSettings.GetArrayElementAtIndex(size);
-                            SerializedProperty partnerID = partnerElement.FindPropertyRelative("combineWithID");
-                            partnerID.stringValue = property.GUID;
-                            MirrorCombination(element, partnerElement);
-                        }
-
-                        Debug.Log($"[Inventory Builder] {headerGUI.text} was mirrored with {partnerProperty.title.stringValue}");
-                    }
-                }
-
-                if (!selectAfterCombine.boolValue)
-                {
-                    // combine result field
-                    Rect combineResultRect = EditorGUILayout.GetControlRect();
-                    combineResultRect = EditorGUI.PrefixLabel(combineResultRect, new GUIContent("Combine Result Item"));
-
-                    GUIContent combineResultGUI = new GUIContent("Set Combination Result");
-                    if (!string.IsNullOrEmpty(resultCombineID.stringValue))
-                    {
-                        if (tempBuilderData.ItemProperties.TryGetValue(resultCombineID.stringValue, out ItemProperty item))
-                        {
-                            combineResultGUI = new GUIContent(item.title.stringValue);
-                        }
-                    }
-
-                    // combine result button
-                    if (GUI.Button(combineResultRect, combineResultGUI, EditorStyles.miniButton))
+                    // combine with button
+                    if (GUI.Button(combineWithRect, combineWithGUI, EditorStyles.miniButton))
                     {
                         ItemProperty[] itemProperties = tempBuilderData.ItemProperties.Select(x => x.Value).ToArray();
                         ItemPicker itemPicker = new ItemPicker(new AdvancedDropdownState(), itemProperties);
                         itemPicker.OnItemPressed += obj =>
                         {
-                            resultCombineID.stringValue = obj.GUID;
+                            combineWithID.stringValue = obj.GUID;
                             tempBuilderData.ItemsArray.serializedObject.ApplyModifiedProperties();
                         };
 
-                        Rect dropdownRect = combineResultRect;
+                        Rect dropdownRect = combineWithRect;
                         dropdownRect.width = 250;
                         itemPicker.Show(dropdownRect);
                     }
-                }
-                else
-                {
-                    DrawPlayerItemPicker(playerItemIndex, new GUIContent("Result Player Item"));
+
+                    // combine with mirror button
+                    Rect mirrorBtnRect = combineWithRect;
+                    mirrorBtnRect.xMin = mirrorBtnRect.xMax;
+                    mirrorBtnRect.xMax += 80f;
+
+                    using (new EditorGUI.DisabledScope(partnerProperty == null || property.GUID == combineWithID.stringValue))
+                    {
+                        if (GUI.Button(mirrorBtnRect, new GUIContent("Mirror", "Mirror combination with partner item."), EditorStyles.miniButton))
+                        {
+                            bool addNew = true;
+                            for (int i = 0; i < partnerProperty.combineSettings.arraySize; i++)
+                            {
+                                SerializedProperty partnerElement = partnerProperty.combineSettings.GetArrayElementAtIndex(i);
+                                SerializedProperty partnerID = partnerElement.FindPropertyRelative("combineWithID");
+                                if (partnerID.stringValue.Equals(property.GUID))
+                                {
+                                    MirrorCombination(element, partnerElement);
+                                    addNew = false;
+                                    break;
+                                }
+                            }
+
+                            if (addNew)
+                            {
+                                int size = partnerProperty.combineSettings.arraySize++;
+                                SerializedProperty partnerElement = partnerProperty.combineSettings.GetArrayElementAtIndex(size);
+                                SerializedProperty partnerID = partnerElement.FindPropertyRelative("combineWithID");
+                                partnerID.stringValue = property.GUID;
+                                MirrorCombination(element, partnerElement);
+                            }
+
+                            Debug.Log($"[Inventory Builder] {headerGUI.text} was mirrored with {partnerProperty.title.stringValue}");
+                        }
+                    }
+
+                    if (!selectAfterCombine.boolValue)
+                    {
+                        // combine result field
+                        Rect combineResultRect = EditorGUILayout.GetControlRect();
+                        combineResultRect = EditorGUI.PrefixLabel(combineResultRect, new GUIContent("Combine Result Item"));
+
+                        GUIContent combineResultGUI = new GUIContent("Set Combination Result");
+                        if (!string.IsNullOrEmpty(resultCombineID.stringValue))
+                        {
+                            if (tempBuilderData.ItemProperties.TryGetValue(resultCombineID.stringValue, out ItemProperty item))
+                            {
+                                combineResultGUI = new GUIContent(item.title.stringValue);
+                            }
+                        }
+
+                        // combine result button
+                        if (GUI.Button(combineResultRect, combineResultGUI, EditorStyles.miniButton))
+                        {
+                            ItemProperty[] itemProperties = tempBuilderData.ItemProperties.Select(x => x.Value).ToArray();
+                            ItemPicker itemPicker = new ItemPicker(new AdvancedDropdownState(), itemProperties);
+                            itemPicker.OnItemPressed += obj =>
+                            {
+                                resultCombineID.stringValue = obj.GUID;
+                                tempBuilderData.ItemsArray.serializedObject.ApplyModifiedProperties();
+                            };
+
+                            Rect dropdownRect = combineResultRect;
+                            dropdownRect.width = 250;
+                            itemPicker.Show(dropdownRect);
+                        }
+                    }
+                    else
+                    {
+                        DrawPlayerItemPicker(playerItemIndex, new GUIContent("Result Player Item"));
+                    }
                 }
 
-                // combination settings
-                EditorGUILayout.Space(EditorGUIUtility.standardVerticalSpacing);
-                EditorGUILayout.PropertyField(keepAfterCombine);
-                EditorGUILayout.PropertyField(eventAfterCombine);
-                EditorGUILayout.PropertyField(selectAfterCombine);
+                // crafting
+                EditorGUILayout.Space(1f);
+                using (new EditorDrawing.BorderBoxScope())
+                {
+                    using (new EditorGUI.DisabledGroupScope(!isCrafting.boolValue))
+                    {
+                        EditorGUILayout.LabelField("Crafting Settings", EditorStyles.miniBoldLabel);
+                        EditorGUILayout.PropertyField(requiredCurrentAmount);
+                        EditorGUILayout.PropertyField(requiredSecondAmount);
+                        EditorGUILayout.PropertyField(resultItemAmount);
+                    }
+                }
+
+                // properties
+                EditorGUILayout.Space(1f);
+                using (new EditorDrawing.BorderBoxScope())
+                {
+                    EditorGUILayout.LabelField("Properties", EditorStyles.miniBoldLabel);
+                    EditorGUILayout.PropertyField(isCrafting);
+
+                    using (new EditorGUI.DisabledGroupScope(isCrafting.boolValue))
+                    {
+                        EditorGUILayout.PropertyField(keepAfterCombine);
+                        EditorGUILayout.PropertyField(eventAfterCombine);
+                        EditorGUILayout.PropertyField(selectAfterCombine);
+                    }
+                }
+
                 EditorDrawing.EndBorderHeaderLayout();
             }
 

@@ -187,6 +187,7 @@ namespace UHFPS.Runtime
             previousItem = currentItem;
             currentItem = null;
             wasDeactivated = true;
+            canSwitch = true;
 
             StopAllCoroutines();
             previousItem.OnItemDeactivate();

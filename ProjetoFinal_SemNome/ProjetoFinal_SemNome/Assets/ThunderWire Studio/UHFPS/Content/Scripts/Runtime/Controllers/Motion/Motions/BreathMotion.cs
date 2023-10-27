@@ -14,7 +14,7 @@ namespace UHFPS.Runtime
         public float breathingIntensity;
 
         // Current time in the breathing cycle
-        private float currentBreathingCycleTime;
+        private float breathingCycleTime;
 
         public override void MotionUpdate(float deltaTime)
         {
@@ -22,26 +22,26 @@ namespace UHFPS.Runtime
             if (!IsUpdatable)
             {
                 SetTargetPosition(Vector3.zero);
-                currentBreathingCycleTime = 0f;
+                breathingCycleTime = 0f;
                 return;
             }
 
             // Check if we've completed the breathing cycle, if so, reset the cycle
-            if (currentBreathingCycleTime > breathingPattern[breathingPattern.length - 1].time)
-                currentBreathingCycleTime = 0f;
+            if (breathingCycleTime > breathingPattern[breathingPattern.length - 1].time)
+                breathingCycleTime = 0f;
 
             // Advance the breathing cycle
-            currentBreathingCycleTime += Time.deltaTime * breathingRate;
-            float evaluatedBreathingValue = breathingPattern.Evaluate(currentBreathingCycleTime) * breathingIntensity;
+            breathingCycleTime += Time.deltaTime * breathingRate;
+            float breathingValue = breathingPattern.Evaluate(breathingCycleTime) * breathingIntensity;
 
             // Create the breathing motion vector
-            Vector3 breathingMotion = new Vector3(0, evaluatedBreathingValue, 0);
+            Vector3 breathingMotion = new(0, breathingValue, 0);
             SetTargetPosition(breathingMotion);
         }
 
         public override void Reset()
         {
-            currentBreathingCycleTime = 0f;
+            breathingCycleTime = 0f;
         }
     }
 }

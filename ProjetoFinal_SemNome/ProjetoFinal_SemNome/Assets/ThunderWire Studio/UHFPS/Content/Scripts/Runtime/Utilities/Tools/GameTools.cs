@@ -116,6 +116,9 @@ namespace UHFPS.Tools
             }
         }
 
+        /// <summary>
+        /// Set the rendering layer of the MeshRenderer in the GameObject.
+        /// </summary>
         public static void SetRenderingLayer(this GameObject obj, uint layer, bool set = true)
         {
             if (layer < 0 || layer > 31)
@@ -153,7 +156,7 @@ namespace UHFPS.Tools
         }
 
         /// <summary>
-        /// Check that the value-A and value-B are close to within tolerance.
+        /// Check if the value-A and value-B are close to the tolerance.
         /// </summary>
         public static bool IsApproximate(float valueA, float valueB, float tollerance)
         {
@@ -356,6 +359,18 @@ namespace UHFPS.Tools
         }
 
         /// <summary>
+        /// Determines where a value lies between three points.
+        /// </summary>
+        public static float InverseLerp3(float min, float mid, float max, float t)
+        {
+            if (t <= min) return 0f;
+            if (t >= max) return 0f;
+
+            if (t <= mid) return Mathf.InverseLerp(min, mid, t);
+            else return 1f - Mathf.InverseLerp(mid, max, t);
+        }
+
+        /// <summary>
         /// Get closest index from an integer array using a value.
         /// </summary>
         public static int ClosestIndex(this int[] array, int value)
@@ -478,6 +493,39 @@ namespace UHFPS.Tools
         {
             AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
             return (stateInfo.length + 0.1f > stateInfo.normalizedTime || animator.IsInTransition(0)) && !stateInfo.IsName("Default");
+        }
+
+        /// <summary>
+        /// Applies an ease-out easing function, which starts the interpolation quickly and then slows down as it approaches the end point.
+        /// </summary>
+        public static float EaseOut(float start, float end, float t)
+        {
+            t = Mathf.Clamp01(t);
+            t = Mathf.Sin(t * Mathf.PI * 0.5f);
+            return Mathf.Lerp(start, end, t);
+        }
+
+        /// <summary>
+        /// Applies an ease-in easing function, which starts the interpolation slowly and then accelerates as it approaches the end point.
+        /// </summary>
+        public static float EaseIn(float start, float end, float t)
+        {
+            t = Mathf.Clamp01(t);
+            t = 1f - Mathf.Cos(t * Mathf.PI * 0.5f);
+            return Mathf.Lerp(start, end, t);
+        }
+
+        /// <summary>
+        /// Implements a smooth step interpolation, offering a more gradual and smoother transition.
+        /// </summary>
+        /// <remarks>
+        /// Use this when you want an even gentler and smoother transition, especially for animations.
+        /// </remarks>
+        public static float SmootherStep(float start, float end, float t)
+        {
+            t = Mathf.Clamp01(t);
+            t = t * t * t * (t * (6f * t - 15f) + 10f);
+            return Mathf.Lerp(start, end, t);
         }
     }
 

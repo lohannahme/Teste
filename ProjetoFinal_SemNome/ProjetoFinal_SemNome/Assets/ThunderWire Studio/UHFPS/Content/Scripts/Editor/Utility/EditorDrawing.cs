@@ -27,11 +27,13 @@ namespace ThunderWire.Editors
     {
         public static class Styles
         {
+            public static Color? labelColor = null;
+
             public static GUIStyle borderBoxHeaderStyle
             {
                 get
                 {
-                    GUIStyle style = new GUIStyle();
+                    GUIStyle style = new();
                     style.margin = new RectOffset(3, 3, 2, 2);
                     style.padding = new RectOffset(5, 5, 2, 5);
                     return style;
@@ -42,7 +44,7 @@ namespace ThunderWire.Editors
             {
                 get
                 {
-                    GUIStyle style = new GUIStyle();
+                    GUIStyle style = new();
                     style.margin = new RectOffset(3, 3, 2, 2);
                     style.padding = new RectOffset(5, 5, 5, 5);
                     return style;
@@ -53,15 +55,19 @@ namespace ThunderWire.Editors
             {
                 get
                 {
-                    GUIStyle style = new GUIStyle(EditorStyles.miniBoldLabel);
+                    GUIStyle style = new(EditorStyles.miniBoldLabel);
                     style.alignment = TextAnchor.MiddleLeft;
+
+                    if (labelColor.HasValue)
+                        style.normal.textColor = labelColor.Value;
+
                     return style;
                 }
             }
 
             public static GUIStyle RichLabel
             {
-                get => new GUIStyle(EditorStyles.label)
+                get => new(EditorStyles.label)
                 {
                     richText = true
                 };
@@ -174,8 +180,8 @@ namespace ThunderWire.Editors
             public BackgroundColorScope(string htmlColor)
             {
                 prevColor = GUI.backgroundColor;
-                ColorUtility.TryParseHtmlString(htmlColor, out Color bgColor);
-                GUI.backgroundColor = bgColor;
+                if(ColorUtility.TryParseHtmlString(htmlColor, out Color bgColor))
+                    GUI.backgroundColor = bgColor;
             }
 
             protected override void CloseScope()
@@ -203,6 +209,31 @@ namespace ThunderWire.Editors
         }
 
         /// <summary>
+        /// Set the header label text color.
+        /// </summary>
+        public static void SetLabelColor(Color color)
+        {
+            Styles.labelColor = color;
+        }
+
+        /// <summary>
+        /// Set the header label text color.
+        /// </summary>
+        public static void SetLabelColor(string htmlColor)
+        {
+            if(ColorUtility.TryParseHtmlString(htmlColor, out Color color))
+                Styles.labelColor = color;
+        }
+
+        /// <summary>
+        /// Reset the header label text color.
+        /// </summary>
+        public static void ResetLabelColor()
+        {
+            Styles.labelColor = null;
+        }
+
+        /// <summary>
         /// Get GUIContent with specified icon.
         /// </summary>
         public static GUIContent IconContent(string iconName, float iconSize = 16f)
@@ -218,6 +249,15 @@ namespace ThunderWire.Editors
         {
             SetIconSize(iconSize);
             return EditorGUIUtility.TrTextContentWithIcon(" " + text, iconName);
+        }
+
+        /// <summary>
+        /// Get GUIContent with specified icon and text.
+        /// </summary>
+        public static GUIContent IconTextContent(string text, Texture2D texture, float iconSize = 16f)
+        {
+            SetIconSize(iconSize);
+            return EditorGUIUtility.TrTextContentWithIcon(" " + text, texture);
         }
 
         /// <summary>
@@ -256,14 +296,25 @@ namespace ThunderWire.Editors
             using (new IconSizeScope(13))
             {
                 Rect rect = GUILayoutUtility.GetRect(1, 30);
-                ColorUtility.TryParseHtmlString("#272727", out Color color);
+                ColorUtility.TryParseHtmlString("#181818", out Color color);
 
                 EditorGUI.DrawRect(rect, color);
-                DrawCorners(rect, Vector2.one * 5, 1, Color.white.Alpha(0.75f));
+                //EditorGUI.DrawRect(new Rect(rect.x, rect.y, rect.width, 1), Color.white.Alpha(0.4f));
+                //EditorGUI.DrawRect(new Rect(rect.x, rect.yMax - 1, rect.width, 1), Color.white.Alpha(0.4f));
+                //DrawCorners(rect, Vector2.one * 5, 1, Color.white.Alpha(0.75f));
+
+                Texture2D mask = Resources.Load<Texture2D>("EditorIcons/mask");
+                GUI.DrawTexture(new Rect(rect.x, rect.yMax - 1, rect.width, 1), mask);
 
                 if (script != null)
                 {
-                    MonoScript monoScript = MonoScript.FromMonoBehaviour((MonoBehaviour)script);
+                    MonoScript monoScript = null;
+
+                    if (script is MonoBehaviour monoBehaviour)
+                        monoScript = MonoScript.FromMonoBehaviour(monoBehaviour);
+                    else if (script is ScriptableObject scriptableObject)
+                        monoScript = MonoScript.FromScriptableObject(scriptableObject);
+
                     DocsAttribute docsAttribute = script.GetType().GetCustomAttribute<DocsAttribute>(true);
                     Event e = Event.current;
 
@@ -734,7 +785,8 @@ namespace ThunderWire.Editors
             EditorGUILayout.BeginHorizontal();
             {
                 GUILayout.FlexibleSpace();
-                Rect moduleButtonRect = EditorGUILayout.GetControlRect(GUILayout.Width(100f));
+                float width = GUI.skin.button.CalcSize(buttonTitle).x + 10f;
+                Rect moduleButtonRect = EditorGUILayout.GetControlRect(GUILayout.Width(width), GUILayout.Height(20f));
 
                 using (new EditorGUI.DisabledGroupScope(Application.isPlaying || !buttonEnabled))
                 {
@@ -755,14 +807,11 @@ namespace ThunderWire.Editors
         /// </summary>
         public static void DrawHeader(Rect headerRect, GUIContent title, GUIStyle labelStyle = null)
         {
-            // header color
-            EditorGUI.DrawRect(headerRect, new Color(0.1f, 0.1f, 0.1f, 0.4f));
+            Color headerColor = new Color(0.1f, 0.1f, 0.1f, 0.4f);
+            EditorGUI.DrawRect(headerRect, headerColor);
 
-            // title
-            Rect labelRect = headerRect;
-            labelRect.xMin += 4f;
-            labelRect.y -= 1f;
-            EditorGUI.LabelField(labelRect, title, labelStyle == null ? Styles.miniBoldLabelCenter : labelStyle);
+            Rect labelRect = new Rect(headerRect.x + 4f, headerRect.y - 1f, headerRect.width - 4f, headerRect.height);
+            EditorGUI.LabelField(labelRect, title, labelStyle ?? Styles.miniBoldLabelCenter);
         }
 
         /// <summary>
@@ -770,19 +819,13 @@ namespace ThunderWire.Editors
         /// </summary>
         public static bool DrawToggleHeader(Rect headerRect, GUIContent title, bool toggle)
         {
-            // header color
-            EditorGUI.DrawRect(headerRect, new Color(0.1f, 0.1f, 0.1f, 0.4f));
+            Color headerColor = new Color(0.1f, 0.1f, 0.1f, 0.4f);
+            EditorGUI.DrawRect(headerRect, headerColor);
 
-            // toggle
-            Rect toggleRect = headerRect;
-            toggleRect.width = EditorGUIUtility.singleLineHeight;
-            toggleRect.x += 4f;
+            Rect toggleRect = new Rect(headerRect.x + 4f, headerRect.y, EditorGUIUtility.singleLineHeight, headerRect.height);
             toggle = GUI.Toggle(toggleRect, toggle, new GUIContent("", "Enabled"), EditorStyles.toggle);
 
-            // title
-            Rect labelRect = headerRect;
-            labelRect.xMin += toggleRect.x;
-            labelRect.y -= 1f;
+            Rect labelRect = new Rect(toggleRect.xMax, headerRect.y - 1f, headerRect.width - toggleRect.xMax, headerRect.height);
             EditorGUI.LabelField(labelRect, title, Styles.miniBoldLabelCenter);
 
             return toggle;
@@ -793,31 +836,28 @@ namespace ThunderWire.Editors
         /// </summary>
         public static bool DrawFoldoutHeader(Rect headerRect, GUIContent title, bool expanded)
         {
-            // header color
-            EditorGUI.DrawRect(headerRect, new Color(0.1f, 0.1f, 0.1f, 0.4f));
+            // Constants
+            Color headerColor = new Color(0.1f, 0.1f, 0.1f, 0.4f);
+            float singleLineHeight = EditorGUIUtility.singleLineHeight;
 
-            // foldout
-            Rect foldoutRect = headerRect;
-            foldoutRect.width = EditorGUIUtility.singleLineHeight;
-            foldoutRect.x += 4f;
+            // Draw header background
+            EditorGUI.DrawRect(headerRect, headerColor);
+
+            // Define and draw foldout toggle
+            Rect foldoutRect = new Rect(headerRect.x + 4f, headerRect.y, singleLineHeight, headerRect.height);
             GUI.Toggle(foldoutRect, expanded, GUIContent.none, EditorStyles.foldout);
 
-            // title
-            Rect labelRect = headerRect;
-            labelRect.xMin = foldoutRect.xMax - 4f;
-            labelRect.y -= 1f;
+            // Define and draw title label
+            Rect labelRect = new Rect(foldoutRect.xMax, headerRect.y - 1f, headerRect.width - foldoutRect.xMax + 4f, headerRect.height);
             EditorGUI.LabelField(labelRect, title, Styles.miniBoldLabelCenter);
 
-            // events
-            headerRect.xMax -= EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+            // Handle mouse events for foldout interaction
+            headerRect.xMax -= singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
             Event e = Event.current;
-            if (headerRect.Contains(e.mousePosition))
+            if (headerRect.Contains(e.mousePosition) && e.type == EventType.MouseDown && e.button == 0)
             {
-                if (e.type == EventType.MouseDown && e.button == 0)
-                {
-                    expanded = !expanded;
-                    e.Use();
-                }
+                expanded = !expanded;
+                e.Use();
             }
 
             return expanded;
@@ -828,31 +868,28 @@ namespace ThunderWire.Editors
         /// </summary>
         public static bool DrawFoldoutHeader(Rect headerRect, GUIContent title, float minusWidth, bool expanded)
         {
-            // header color
-            EditorGUI.DrawRect(headerRect, new Color(0.1f, 0.1f, 0.1f, 0.4f));
+            // Constants
+            Color headerColor = new Color(0.1f, 0.1f, 0.1f, 0.4f);
+            float singleLineHeight = EditorGUIUtility.singleLineHeight;
 
-            // foldout
-            Rect foldoutRect = headerRect;
-            foldoutRect.width = EditorGUIUtility.singleLineHeight;
-            foldoutRect.x += 4f;
+            // Draw header background
+            EditorGUI.DrawRect(headerRect, headerColor);
+
+            // Draw foldout
+            Rect foldoutRect = new Rect(headerRect.x + 4f, headerRect.y, singleLineHeight, headerRect.height);
             GUI.Toggle(foldoutRect, expanded, GUIContent.none, EditorStyles.foldout);
 
-            // title
-            Rect labelRect = headerRect;
-            labelRect.xMin = foldoutRect.xMax - 4f;
-            labelRect.y -= 1f;
+            // Draw title
+            Rect labelRect = new Rect(foldoutRect.xMax, headerRect.y - 1f, headerRect.width - foldoutRect.xMax, headerRect.height);
             EditorGUI.LabelField(labelRect, title, Styles.miniBoldLabelCenter);
 
-            // events
-            headerRect.xMax -= EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing + minusWidth;
+            // Handle mouse events
+            headerRect.xMax -= singleLineHeight + EditorGUIUtility.standardVerticalSpacing + minusWidth;
             Event e = Event.current;
-            if (headerRect.Contains(e.mousePosition))
+            if (headerRect.Contains(e.mousePosition) && e.type == EventType.MouseDown && e.button == 0)
             {
-                if (e.type == EventType.MouseDown && e.button == 0)
-                {
-                    expanded = !expanded;
-                    e.Use();
-                }
+                expanded = !expanded;
+                e.Use();
             }
 
             return expanded;
@@ -863,40 +900,40 @@ namespace ThunderWire.Editors
         /// </summary>
         public static void DrawFoldoutToggleHeader(Rect headerRect, GUIContent title, ref bool expanded, ref bool toggle, bool canExpand = true)
         {
-            // header color
-            EditorGUI.DrawRect(headerRect, new Color(0.1f, 0.1f, 0.1f, 0.4f));
+            // Constants
+            float singleLineHeight = EditorGUIUtility.singleLineHeight;
+            Color headerColor = new Color(0.1f, 0.1f, 0.1f, 0.4f);
 
-            // foldout
+            // Draw header background
+            EditorGUI.DrawRect(headerRect, headerColor);
+
+            // Set up initial positions
             Rect foldoutRect = headerRect;
+            foldoutRect.width = singleLineHeight;
+            foldoutRect.x += 4f;
+
+            // If expandable, draw foldout and adjust for toggle position
             if (canExpand)
             {
-                foldoutRect.width = EditorGUIUtility.singleLineHeight;
-                foldoutRect.x += 4f;
                 GUI.Toggle(foldoutRect, expanded, GUIContent.none, EditorStyles.foldout);
+                foldoutRect.x += singleLineHeight;
             }
 
-            // toggle
-            Rect toggleRect = headerRect;
-            toggleRect.width = EditorGUIUtility.singleLineHeight;
-            toggleRect.x += canExpand ? foldoutRect.x : 4f;
+            // Draw toggle
+            Rect toggleRect = new Rect(foldoutRect.x, headerRect.y, singleLineHeight, headerRect.height);
             toggle = GUI.Toggle(toggleRect, toggle, new GUIContent("", "Enabled"), EditorStyles.toggle);
 
-            // title
-            Rect labelRect = headerRect;
-            labelRect.xMin += toggleRect.x;
-            labelRect.y -= 1f;
+            // Draw title
+            Rect labelRect = new Rect(toggleRect.xMax, headerRect.y - 1f, headerRect.width - toggleRect.xMax, headerRect.height);
             EditorGUI.LabelField(labelRect, title, Styles.miniBoldLabelCenter);
 
-            // events
-            headerRect.xMax -= EditorGUIUtility.singleLineHeight + 2f;
+            // Handle events
+            headerRect.xMax -= singleLineHeight + 2f;
             Event e = Event.current;
-            if (headerRect.Contains(e.mousePosition) && canExpand)
+            if (canExpand && headerRect.Contains(e.mousePosition) && e.type == EventType.MouseDown && e.button == 0)
             {
-                if (e.type == EventType.MouseDown && e.button == 0)
-                {
-                    expanded = !expanded;
-                    e.Use();
-                }
+                expanded = !expanded;
+                e.Use();
             }
         }
 

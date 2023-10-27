@@ -1,3 +1,5 @@
+using System;
+using System.Reactive.Disposables;
 using UnityEngine;
 using UHFPS.Scriptable;
 using ThunderWire.Attributes;
@@ -34,7 +36,9 @@ namespace UHFPS.Runtime
             }
         }
 
-        private void Start()
+        public CompositeDisposable Disposables = new();
+
+        private void Awake()
         {
             MotionBlender.Init(MotionPreset, HeadMotionTransform, this);
         }
@@ -42,6 +46,7 @@ namespace UHFPS.Runtime
         private void OnDestroy()
         {
             MotionBlender.Dispose();
+            Disposables.Dispose();
         }
 
         private void Update()
@@ -60,6 +65,54 @@ namespace UHFPS.Runtime
 
             MotionBlender.BlendMotions(Time.deltaTime, out var position, out var rotation);
             HeadMotionTransform.SetLocalPositionAndRotation(position, rotation);
+        }
+
+        /// <summary>
+        /// Get motion that is added to the default motion state.
+        /// </summary>
+        public T GetDefaultMotion<T>() where T : MotionModule
+        {
+            if (MotionBlender.IsInitialized)
+            {
+                Type motionType = typeof(T);
+                foreach (var state in MotionBlender.Instance.StateMotions)
+                {
+                    if (state.StateID == MotionBlender.Default)
+                    {
+                        foreach (var motion in state.Motions)
+                        {
+                            if (motion.GetType() == motionType)
+                                return (T)motion;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Get motion that is added to the specific motion state.
+        /// </summary>
+        public T GetStateMotion<T>(string stateID) where T : MotionModule
+        {
+            if (MotionBlender.IsInitialized)
+            {
+                Type motionType = typeof(T);
+                foreach (var state in MotionBlender.Instance.StateMotions)
+                {
+                    if (state.StateID == stateID)
+                    {
+                        foreach (var motion in state.Motions)
+                        {
+                            if (motion.GetType() == motionType)
+                                return (T)motion;
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

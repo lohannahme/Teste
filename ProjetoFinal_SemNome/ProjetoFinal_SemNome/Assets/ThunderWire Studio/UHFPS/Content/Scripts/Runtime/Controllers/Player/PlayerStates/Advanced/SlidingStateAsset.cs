@@ -4,7 +4,7 @@ using UHFPS.Scriptable;
 
 namespace UHFPS.Runtime.States
 {
-    public class SlidingStateAsset : StrafeStateAsset
+    public class SlidingStateAsset : PlayerStateAsset
     {
         public float SlidingFriction = 2f;
         public float SpeedChange = 2f;
@@ -14,14 +14,14 @@ namespace UHFPS.Runtime.States
 
         public override FSMPlayerState InitState(PlayerStateMachine machine, PlayerStatesGroup group)
         {
-            return new SlidingPlayerState(machine, group, this);
+            return new SlidingPlayerState(machine, this);
         }
 
-        public override string GetStateKey() => PlayerStateMachine.SLIDING_STATE;
+        public override string StateKey => PlayerStateMachine.SLIDING_STATE;
 
-        public override string ToString() => "Sliding";
+        public override string Name => "Generic/Sliding";
 
-        public class SlidingPlayerState : StrafePlayerState
+        public class SlidingPlayerState : FSMPlayerState
         {
             protected readonly SlidingStateAsset State;
 
@@ -31,7 +31,7 @@ namespace UHFPS.Runtime.States
             private Vector3 enterMotion;
             private float motionToSlidingBlend;
 
-            public SlidingPlayerState(PlayerStateMachine machine, PlayerStatesGroup group, StrafeStateAsset stateAsset) : base(machine, group) 
+            public SlidingPlayerState(PlayerStateMachine machine, PlayerStateAsset stateAsset) : base(machine) 
             {
                 State = (SlidingStateAsset)stateAsset;
             }
@@ -48,7 +48,7 @@ namespace UHFPS.Runtime.States
             public override void OnStateUpdate()
             {
                 bool sliding = SlopeCast(out Vector3 normal, out float angle);
-                isSliding = sliding && angle > strafeGroup.slopeLimit;
+                isSliding = sliding && angle > machine.PlayerSliding.SlopeLimit;
 
                 Vector3 slidingForward = Vector3.ProjectOnPlane(Vector3.down, normal);
                 Vector3 slidingRight = Vector3.Cross(normal, slidingForward);
@@ -70,8 +70,8 @@ namespace UHFPS.Runtime.States
             {
                 return new Transition[]
                 {
-                    Transition.To<IdleStateAsset>(() => !isSliding),
-                    Transition.To<DeathStateAsset>(() => IsDead)
+                    Transition.To(PlayerStateMachine.IDLE_STATE, () => !isSliding),
+                    Transition.To(PlayerStateMachine.DEATH_STATE, () => IsDead)
                 };
             }
         }

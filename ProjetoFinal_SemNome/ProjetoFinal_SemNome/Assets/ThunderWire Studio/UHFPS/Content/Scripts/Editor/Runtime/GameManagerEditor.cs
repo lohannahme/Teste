@@ -40,7 +40,18 @@ namespace UHFPS.Editors
                     EditorGUILayout.Space(2f);
                     EditorGUILayout.LabelField("Feature Panels", EditorStyles.boldLabel);
                     Properties.Draw("InventoryPanel");
+                    Properties.Draw("AlertsPanel");
                     Properties.Draw("FloatingIcons");
+
+                    EditorDrawing.EndBorderHeaderLayout();
+                }
+
+                EditorGUILayout.Space(1f);
+
+                if (EditorDrawing.BeginFoldoutBorderLayout(Properties["SaveGameButton"], new GUIContent("Pause References")))
+                {
+                    Properties.Draw("SaveGameButton");
+                    Properties.Draw("LoadGameButton");
 
                     EditorDrawing.EndBorderHeaderLayout();
                 }

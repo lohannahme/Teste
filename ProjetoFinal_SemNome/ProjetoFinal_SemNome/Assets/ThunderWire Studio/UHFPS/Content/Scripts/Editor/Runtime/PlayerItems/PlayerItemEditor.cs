@@ -12,45 +12,58 @@ namespace UHFPS.Editors
         public PlayerItemBehaviour Behaviour { get; private set; }
         public PropertyCollection Properties { get; private set; }
 
-        private bool settingsFoldout;
+        private SerializedProperty foldoutProperty;
         private MotionListHelper motionListHelper;
+        private ExternalMotionsDrawer externalMotionsDrawer;
 
         public virtual void OnEnable()
         {
             Target = target as T;
             Behaviour = Target;
+
             Properties = EditorDrawing.GetAllProperties(serializedObject);
+            foldoutProperty = Properties["<ItemObject>k__BackingField"];
 
             MotionPreset preset = Behaviour.MotionPreset;
             motionListHelper = new(preset);
+
+            SerializedProperty externalMotions = Properties["ExternalMotions"];
+            externalMotionsDrawer = new(externalMotions, Target.ExternalMotions);
         }
 
         public override void OnInspectorGUI()
         {
-            GUIContent playerItemSettingsContent = EditorGUIUtility.TrTextContentWithIcon(" PlayerItem Base Settings", "Settings");
-            if (EditorDrawing.BeginFoldoutBorderLayout(playerItemSettingsContent, ref settingsFoldout))
+            GUIContent headerContent = EditorDrawing.IconTextContent("Wieldable Settings", "Settings");
+            EditorDrawing.SetLabelColor("#E0FBFC");
+
+            if (EditorDrawing.BeginFoldoutBorderLayout(foldoutProperty, headerContent))
             {
-                if(EditorDrawing.BeginFoldoutToggleBorderLayout(new GUIContent("Wall Detection"), Properties["EnableWallDetection"]))
+                EditorDrawing.ResetLabelColor();
+
+                if (EditorDrawing.BeginFoldoutToggleBorderLayout(new GUIContent("Wall Detection"), Properties["EnableWallDetection"]))
                 {
                     using (new EditorGUI.DisabledGroupScope(!Properties.BoolValue("EnableWallDetection")))
                     {
-                        Properties.Draw("ShowRayGizmos");
                         Properties.Draw("WallHitMask");
                         Properties.Draw("WallHitRayDistance");
                         Properties.Draw("WallHitRayRadius");
+                        Properties.Draw("WallHitRayOffset");
+
+                        EditorGUILayout.Space();
+                        EditorGUILayout.LabelField("Settings", EditorStyles.boldLabel);
                         Properties.Draw("WallHitAmount");
                         Properties.Draw("WallHitTime");
-                        Properties.Draw("WallHitRayOffset");
+                        Properties.Draw("ShowRayGizmos");
                     }
                     EditorDrawing.EndBorderHeaderLayout();
                 }
 
-                if (EditorDrawing.BeginFoldoutToggleBorderLayout(new GUIContent("Motion Preset"), Properties["EnableMotionPreset"]))
+                if (EditorDrawing.BeginFoldoutToggleBorderLayout(new GUIContent("Wieldable Motions"), Properties["EnableMotionPreset"]))
                 {
                     using (new EditorGUI.DisabledGroupScope(!Properties.BoolValue("EnableMotionPreset")))
                     {
                         motionListHelper.DrawMotionPresetField(Properties["MotionPreset"]);
-                        Properties.Draw("<MotionPivot>k__BackingField");
+                        Properties.DrawBacking("MotionPivot");
 
                         if (motionListHelper != null)
                         {
@@ -62,8 +75,18 @@ namespace UHFPS.Editors
                     EditorDrawing.EndBorderHeaderLayout();
                 }
 
+                if (EditorDrawing.BeginFoldoutToggleBorderLayout(new GUIContent("Camera Motions"), Properties["EnableExternalMotion"]))
+                {
+                    using (new EditorGUI.DisabledGroupScope(!Properties.BoolValue("EnableExternalMotion")))
+                    {
+                        externalMotionsDrawer.DrawExternalMotions(new GUIContent("External Motions"));
+                    }
+                    EditorDrawing.EndBorderHeaderLayout();
+                }
+
                 EditorDrawing.EndBorderHeaderLayout();
             }
+            EditorDrawing.ResetLabelColor();
         }
     }
 }

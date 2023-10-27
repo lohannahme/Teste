@@ -18,66 +18,55 @@ namespace UHFPS.Editors
                 base.OnInspectorGUI();
                 EditorGUILayout.Space();
 
-                Properties.Draw("<ItemObject>k__BackingField");
-                Properties.Draw("SurfaceDetails");
+                Properties.DrawBacking("ItemObject");
+                Properties.Draw("SurfaceDefinitionSet");
                 Properties.Draw("SurfaceDetection");
+                Properties.Draw("FleshTag");
 
                 EditorGUILayout.Space();
-                using(new EditorDrawing.BorderBoxScope(new GUIContent("Knife Settings")))
+                using (new EditorDrawing.BorderBoxScope(new GUIContent("Raycast Settings")))
                 {
                     Properties.Draw("RaycastMask");
-                    Properties.Draw("AttackDistance");
-                    Properties.Draw("AttackDamage");
-                    Properties.Draw("AttackWait");
+                    Properties.Draw("AttackAngle");
+                    Properties.Draw("AttackRange");
+                    Properties.Draw("RaycastCount");
+                    Properties.Draw("RaycastDelay");
+                    Properties.Draw("ShowAttackGizmos");
                 }
 
                 EditorGUILayout.Space();
-                using (new EditorDrawing.BorderBoxScope(new GUIContent("Knife Animations")))
+                using (new EditorDrawing.BorderBoxScope(new GUIContent("Damage Settings")))
                 {
-                    Properties.Draw("KnifeDrawState");
-                    Properties.Draw("KnifeHideState");
-                    Properties.Draw("KnifeIdleState");
+                    Properties.Draw("AttackDamage");
+                    Properties.Draw("NextAttackDelay");
+                    Properties.Draw("AttackTimeOffset");
+                }
+
+                EditorGUILayout.Space();
+                using (new EditorDrawing.BorderBoxScope(new GUIContent("Animation Settings")))
+                {
+                    Properties.Draw("DrawState");
+                    Properties.Draw("HideState");
+                    Properties.Draw("IdleState");
+
+                    EditorGUILayout.Space();
+                    EditorGUILayout.LabelField(new GUIContent("Slash"), EditorStyles.boldLabel);
+                    Properties.Draw("SlashRState");
+                    Properties.Draw("SlashLState");
 
                     EditorGUILayout.Space();
                     EditorGUILayout.LabelField(new GUIContent("Triggers"), EditorStyles.boldLabel);
+                    Properties.Draw("AttackBool");
+                    Properties.Draw("SlashTrigger");
                     Properties.Draw("HideTrigger");
-                    Properties.Draw("AttackTrigger");
-                    Properties.Draw("AttackTypeTrigger");
-
-                    EditorGUILayout.Space();
-                    EditorGUILayout.LabelField(new GUIContent("Settings"), EditorStyles.boldLabel);
-                    Properties.DrawArray("SlashTypes");
-                    Properties.Draw("StabIndex");
                 }
 
                 EditorGUILayout.Space();
-                using (new EditorDrawing.BorderBoxScope(new GUIContent("Knife Sounds")))
+                using (new EditorDrawing.BorderBoxScope(new GUIContent("Audio Settings")))
                 {
-                    Properties.DrawArray("FleshImpact");
-
-                    EditorGUILayout.Space();
-                    EditorGUILayout.LabelField("Whoosh", EditorStyles.boldLabel);
-
-                    Properties.DrawArray("SlashWhoosh");
-                    Properties.DrawArray("StabWhoosh");
-
-                    EditorGUILayout.Space();
-
-                    if(EditorDrawing.BeginFoldoutBorderLayout(Properties["SlashWhoosh"], new GUIContent("Flesh Hit")))
-                    {
-                        Properties.DrawArray("FleshSlash");
-                        Properties.DrawArray("FleshStab");
-                        EditorDrawing.EndBorderHeaderLayout();
-                    }
-
-                    if (EditorDrawing.BeginFoldoutBorderLayout(Properties["StabWhoosh"], new GUIContent("Volumes")))
-                    {
-                        Properties.Draw("DefaultSlashVolume");
-                        Properties.Draw("DefaultStabVolume");
-                        Properties.Draw("FleshSlashVolume");
-                        Properties.Draw("FleshStabVolume");
-                        EditorDrawing.EndBorderHeaderLayout();
-                    }
+                    Properties.Draw("KnifeDraw");
+                    Properties.Draw("KnifeHide");
+                    Properties.Draw("KnifeSlash");
                 }
             }
             serializedObject.ApplyModifiedProperties();

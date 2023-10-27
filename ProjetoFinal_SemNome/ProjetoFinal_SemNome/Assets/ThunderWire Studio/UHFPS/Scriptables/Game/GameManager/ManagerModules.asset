@@ -15,11 +15,13 @@ MonoBehaviour:
   ManagerModules:
   - rid: 1842181370026655746
   - rid: 1842181370026655744
+  - rid: 8154966034088460288
   references:
     version: 2
     RefIds:
     - rid: 1842181370026655744
       type: {class: CutsceneModule, ns: UHFPS.Runtime, asm: Assembly-CSharp}
+      data: 
     - rid: 1842181370026655746
       type: {class: FloatingIconModule, ns: UHFPS.Runtime, asm: Assembly-CSharp}
       data:
@@ -31,3 +33,6 @@ MonoBehaviour:
         DistanceHide: 3.5
         FadeInTime: 0.2
         FadeOutTime: 0.03
+    - rid: 8154966034088460288
+      type: {class: RainingModule, ns: UHFPS.Runtime, asm: Assembly-CSharp}
+      data: 

@@ -5,7 +5,7 @@ using UHFPS.Tools;
 
 namespace UHFPS.Runtime.States
 {
-    public class LadderStateAsset : StrafeStateAsset
+    public class LadderStateAsset : PlayerStateAsset
     {
         public ControlsContext ControlExit;
 
@@ -34,9 +34,9 @@ namespace UHFPS.Runtime.States
             return new LadderPlayerState(machine, this);
         }
 
-        public override string GetStateKey() => PlayerStateMachine.LADDER_STATE;
+        public override string StateKey => PlayerStateMachine.LADDER_STATE;
 
-        public override string ToString() => "Ladder";
+        public override string Name => "Generic/Ladder";
 
         public class LadderPlayerState : FSMPlayerState
         {
@@ -73,7 +73,7 @@ namespace UHFPS.Runtime.States
                 }
             }
 
-            public LadderPlayerState(PlayerStateMachine machine, StrafeStateAsset stateAsset) : base(machine)
+            public LadderPlayerState(PlayerStateMachine machine, PlayerStateAsset stateAsset) : base(machine)
             {
                 State = (LadderStateAsset)stateAsset;
                 State.ControlExit.SubscribeGloc();
@@ -84,11 +84,11 @@ namespace UHFPS.Runtime.States
             {
                 return new Transition[]
                 {
-                    Transition.To<IdleStateAsset>(() =>
+                    Transition.To(PlayerStateMachine.IDLE_STATE, () =>
                     {
                         return exitState || InputManager.ReadButtonOnce("Jump", Controls.JUMP);
                     }),
-                    Transition.To<DeathStateAsset>(() => IsDead)
+                    Transition.To(PlayerStateMachine.DEATH_STATE, () => IsDead)
                 };
             }
 
@@ -141,6 +141,7 @@ namespace UHFPS.Runtime.States
                 playerItems.IsItemsUsable = false;
 
                 gameManager.ShowControlsInfo(true, State.ControlExit);
+                controllerState = machine.StandingState;
             }
 
             public override void OnStateExit()
@@ -166,6 +167,7 @@ namespace UHFPS.Runtime.States
                         Vector3 bezierPosition = VectorE.QuadraticBezier(startPosition, movePosition, ladderArc, bezierEval);
                         CenterPosition = Vector3.MoveTowards(CenterPosition, bezierPosition, Time.deltaTime * State.BezierLadderSpeed);
                         machine.Motion = Vector3.zero;
+                        Physics.SyncTransforms();
                     }
                     else
                     {
@@ -187,7 +189,6 @@ namespace UHFPS.Runtime.States
                     LadderClimbUpdate();
                 }
 
-                controllerState = machine.StandingState;
                 PlayerHeightUpdate();
             }
 

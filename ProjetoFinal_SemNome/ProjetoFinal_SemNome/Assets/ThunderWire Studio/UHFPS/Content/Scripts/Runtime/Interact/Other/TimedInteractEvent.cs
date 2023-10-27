@@ -26,7 +26,7 @@ namespace UHFPS.Runtime
         public UnityEvent OnInteract;
         public UnityEvent OnReset;
 
-        public bool ContainsRequiredItem => RequireInventoryItem && Inventory.Instance.ContainsItem(RequiredItem);
+        public bool ContainsRequiredItem => !RequireInventoryItem || Inventory.Instance.ContainsItem(RequiredItem);
 
         public bool IsResetState => isInteractTimed;
 

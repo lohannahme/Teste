@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UHFPS.Input;
@@ -17,6 +18,7 @@ namespace UHFPS.Runtime
         private PlayerItemsManager playerItems;
 
         private readonly Shortcut[] shortcuts = new Shortcut[4];
+        private readonly List<string> combinePartners = new();
 
         private bool bindShortcut;
         private bool itemSelector;
@@ -53,13 +55,33 @@ namespace UHFPS.Runtime
                         SetShortcut(i);
                         bindShortcut = false;
                     }
-                    else if (shortcuts[i].item != null && !gameManager.IsInventoryShown)
+                    else if (shortcuts[i].item != null && !gameManager.IsInventoryShown && PlayerItems.CanInteract)
                     {
                         UseItem(shortcuts[i].item);
                     }
                     break;
                 }
             }
+        }
+
+        public int AutoShortcut(InventoryItem inventoryItem, bool replace = false, int replaceId = 0)
+        {
+            for (int i = 0; i < shortcuts.Length; i++)
+            {
+                if (shortcuts[i].item == null)
+                {
+                    SetShortcut(i, inventoryItem);
+                    return i;
+                }
+            }
+
+            if (replace)
+            {
+                SetShortcut(replaceId, inventoryItem);
+                return replaceId;
+            }
+
+            return -1;
         }
 
         public void UseItem()
@@ -106,13 +128,13 @@ namespace UHFPS.Runtime
         {
             foreach (var item in carryingItems)
             {
-                bool hasCombination = activeItem.Item.CombineSettings.Any(x => x.combineWithID == item.Key.ItemGuid);
-                bool checkPlayerItem = CheckCombinePlayerItem(item.Key);
-                item.Key.SetCombinable(true, hasCombination && !checkPlayerItem);
+                bool isCombinable = combinePartners.Contains(item.Key.ItemGuid);
+                item.Key.SetCombinable(true, isCombinable);
             }
 
             ShowInventoryPrompt(true, promptSettings.combinePrompt);
             ShowContextMenu(false);
+            combinePartners.Clear();
         }
 
         public void CombineWith(InventoryItem secondItem)
@@ -130,48 +152,66 @@ namespace UHFPS.Runtime
             if (!string.IsNullOrEmpty(activeCombination.combineWithID))
             {
                 // call active inventory item, player item combination events
-                if (activeCombination.eventAfterCombine && secondItem.Item.UsableSettings.usableType == UsableType.PlayerItem)
+                if (!activeCombination.isCrafting)
                 {
-                    int playerItemIndex = secondItem.Item.UsableSettings.playerItemIndex;
-                    var playerItem = playerItems.PlayerItems[playerItemIndex];
+                    if (activeCombination.eventAfterCombine && secondItem.Item.UsableSettings.usableType == UsableType.PlayerItem)
+                    {
+                        int playerItemIndex = secondItem.Item.UsableSettings.playerItemIndex;
+                        var playerItem = playerItems.PlayerItems[playerItemIndex];
 
-                    // check if it is possible to combine a player item (e.g. reload) with an active item
-                    if (playerItem.CanCombine()) playerItem.OnItemCombine(activeItem);
+                        // check if it is possible to combine a player item (e.g. reload) with an active item
+                        if (playerItem.CanCombine()) playerItem.OnItemCombine(activeItem);
+                    }
+
+                    if (!activeCombination.keepAfterCombine)
+                    {
+                        // remove the active item if keepAfterCombine is false
+                        RemoveShortcut(activeItem);
+                        RemoveItem(activeItem, 1);
+                    }
                 }
-
-                // remove the active item if keepAfterCombine is false
-                if (!activeCombination.keepAfterCombine)
+                else
                 {
                     RemoveShortcut(activeItem);
-                    RemoveItem(activeItem, 1);
+                    RemoveItem(activeItem, activeCombination.requiredCurrentAmount);
                 }
             }
 
             // second combination events
-            if (!string.IsNullOrEmpty(secondCombination.combineWithID))
+            if (activeCombination.isCrafting)
             {
-                // remove the second item if keepAfterCombine is false
+                RemoveShortcut(secondItem);
+                RemoveItem(secondItem, activeCombination.requiredSecondAmount);
+            }
+            else if (!string.IsNullOrEmpty(secondCombination.combineWithID))
+            {
                 if (!secondCombination.keepAfterCombine)
                 {
+                    // remove the second item if keepAfterCombine is false
                     RemoveShortcut(secondItem);
                     RemoveItem(secondItem, 1);
                 }
             }
 
-            // select player item after combine
-            if (activeCombination.selectAfterCombine)
+            if (!activeCombination.isCrafting)
             {
-                int playerItemIndex = activeCombination.playerItemIndex;
-                if (playerItemIndex >= 0) playerPresence.PlayerManager.PlayerItems.SwitchPlayerItem(playerItemIndex);
+                // select player item after combine
+                if (activeCombination.selectAfterCombine)
+                {
+                    int playerItemIndex = activeCombination.playerItemIndex;
+                    if (playerItemIndex >= 0) playerPresence.PlayerManager.PlayerItems.SwitchPlayerItem(playerItemIndex);
+                }
             }
 
             if (!string.IsNullOrEmpty(activeCombination.resultCombineID))
             {
-                AddItem(activeCombination.resultCombineID, 1, new());
+                int quantity = activeCombination.isCrafting ? activeCombination.resultItemAmount : 1;
+                AddItem(activeCombination.resultCombineID, (ushort)quantity, new());
             }
 
             activeItem = null;
             ShowInventoryPrompt(false, null);
+            combinePartners.Clear();
         }
 
         public void ShortcutItem()
@@ -180,6 +220,7 @@ namespace UHFPS.Runtime
             ShowContextMenu(false);
             ShowInventoryPrompt(true, promptSettings.shortcutPrompt);
             contextMenu.blockerPanel.SetActive(true);
+            combinePartners.Clear();
         }
 
         private void SetShortcut(int index)
@@ -242,6 +283,7 @@ namespace UHFPS.Runtime
                 Debug.LogError("[Inventory] Could not examine an item because the item does not contain an item drop object!");
             }
 
+            combinePartners.Clear();
             activeItem = null;
         }
 
@@ -282,6 +324,7 @@ namespace UHFPS.Runtime
 
             RemoveShortcut(activeItem);
             ShowContextMenu(false);
+            combinePartners.Clear();
             activeItem = null;
         }
 
@@ -290,6 +333,7 @@ namespace UHFPS.Runtime
             RemoveShortcut(activeItem);
             RemoveItem(activeItem);
             ShowContextMenu(false);
+            combinePartners.Clear();
             activeItem = null;
         }
     }

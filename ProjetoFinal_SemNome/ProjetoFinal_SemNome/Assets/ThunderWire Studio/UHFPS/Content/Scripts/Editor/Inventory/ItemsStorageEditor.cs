@@ -1,9 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UHFPS.Runtime;
 using ThunderWire.Editors;
+using System.Linq;
 
 namespace UHFPS.Editors
 {
@@ -26,12 +25,17 @@ namespace UHFPS.Editors
 
                 EditorGUILayout.Space();
 
+                EditorGUILayout.BeginVertical(GUI.skin.box);
                 Properties.Draw("AutoCoords");
+                EditorGUILayout.EndVertical();
+
+                EditorGUILayout.BeginVertical(GUI.skin.box);
                 if (Properties.DrawGetBool("TimedOpen"))
                 {
                     Properties.Draw("KeepSearched");
                     Properties.DrawBacking("InteractTime");
                 }
+                EditorGUILayout.EndVertical();
 
                 EditorGUILayout.Space();
 
@@ -91,16 +95,22 @@ namespace UHFPS.Editors
 
                 EditorGUILayout.Space();
 
-                EditorGUILayout.BeginVertical(GUI.skin.box);
+                if(!Target.AutoCoords && Target.StoredItems.GroupBy(item => item.Coords)
+                    .Where(group => group.Count() > 1)
+                    .Select(group => group.Key).Any())
                 {
-                    EditorGUILayout.LabelField("Sound Settings", EditorStyles.boldLabel);
+                    EditorGUILayout.HelpBox("There are items in the storage that have the same coordinates, which may cause overlap!", MessageType.Error);
+                    EditorGUILayout.Space();
+                }
+
+                using (new EditorDrawing.BorderBoxScope(new GUIContent("Sound Settings")))
+                {
                     Properties.Draw("AudioSource");
                     EditorGUILayout.Space(1f);
                     Properties.Draw("SearchingSound");
                     Properties.Draw("OpenStorageSound");
                     Properties.Draw("CloseStorageSound");
                 }
-                EditorGUILayout.EndVertical();
 
                 EditorGUILayout.Space();
                 if (EditorDrawing.BeginFoldoutBorderLayout(Properties["OnStartSearch"], new GUIContent("Events")))

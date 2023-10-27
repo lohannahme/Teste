@@ -7,6 +7,7 @@ namespace UHFPS.Runtime
     {
         public MotionPreset preset;
         public PlayerComponent component;
+        public MotionBlender motionBlender;
         public Transform motionTransform;
         public string motionState;
     }

@@ -89,7 +89,7 @@ namespace UHFPS.Runtime
             lanternPanel = (CanvasGroup)behaviours[0];
             lanternFlame = (CanvasGroup)behaviours[1];
 
-            if (!SaveGameManager.IsGameJustLoaded)
+            if (!SaveGameManager.GameWillLoad)
             {
                 currentFuel = FuelPercentage.From(FuelLife);
                 UpdateFuel();
@@ -101,8 +101,8 @@ namespace UHFPS.Runtime
             if (!updateHandle)
                 return;
 
-            float lookY = LookController.rotation.y;
-            MinMax lookLimits = LookController.verticalLimits;
+            float lookY = LookController.LookRotation.y;
+            MinMax lookLimits = LookController.VerticalLimits;
             Vector3 movement = PlayerStateMachine.Controller.velocity;
 
             float lookInverse1 = Mathf.InverseLerp(lookLimits.min, 0, lookY);
@@ -240,6 +240,9 @@ namespace UHFPS.Runtime
 
         public override void OnItemActivate()
         {
+            lanternPanel.alpha = 1f;
+            lanternPanel.gameObject.SetActive(true);
+
             StopAllCoroutines();
             ItemObject.SetActive(true);
             Animator.Play(LanternIdleState);
@@ -254,6 +257,9 @@ namespace UHFPS.Runtime
 
         public override void OnItemDeactivate()
         {
+            lanternPanel.alpha = 0f;
+            lanternPanel.gameObject.SetActive(false);
+
             StopAllCoroutines();
             ItemObject.SetActive(false);
             updateHandle = false;

@@ -41,6 +41,8 @@ namespace UHFPS.Runtime
         public GString lockedText;
 
         public Collider[] ignoreColliders;
+        public bool ignorePlayerCollider;
+
         public string useTrigger1 = "Open";
         public string useTrigger2 = "Close";
         public string useTrigger3 = "OpenSide";
@@ -114,6 +116,13 @@ namespace UHFPS.Runtime
                 {
                     Physics.IgnoreCollision(collider, col);
                 }
+            }
+
+            if(dynamicType == DynamicType.Pullable && ignorePlayerCollider)
+            {
+                Collider player = gameManager.PlayerPresence.Player.GetComponent<CharacterController>();
+                Collider collider = GetComponent<Collider>();
+                Physics.IgnoreCollision(player, collider);
             }
 
             if (showLockedText)

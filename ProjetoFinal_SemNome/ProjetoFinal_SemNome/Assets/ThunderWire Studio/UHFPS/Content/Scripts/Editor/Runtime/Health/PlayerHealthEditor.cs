@@ -50,6 +50,13 @@ namespace UHFPS.Editors
                 }
 
                 EditorGUILayout.Space();
+                using (new EditorDrawing.ToggleBorderBoxScope(new GUIContent("Fall Damage"), Properties["EnableFallDamage"]))
+                {
+                    Properties.Draw("FallDistance");
+                    Properties.Draw("FallDamage");
+                }
+
+                EditorGUILayout.Space();
                 using(new EditorDrawing.ToggleBorderBoxScope(new GUIContent("Damage Sounds"), Properties["UseDamageSounds"]))
                 {
                     using (new EditorGUI.DisabledGroupScope(!Properties.BoolValue("UseDamageSounds")))

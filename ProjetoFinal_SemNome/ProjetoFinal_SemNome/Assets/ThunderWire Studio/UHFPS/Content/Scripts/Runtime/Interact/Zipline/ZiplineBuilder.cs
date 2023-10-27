@@ -20,6 +20,16 @@ namespace UHFPS.Runtime
         public float PlayerRadius = 0.3f;
         public float PlayerHeight = 1.8f;
 
+        private void Reset()
+        {
+            ResetEndPosition();
+        }
+
+        public void ResetEndPosition()
+        {
+            ZiplineEnd = transform.position + new Vector3(1, 0, 0);
+        }
+
         private void OnDrawGizmosSelected()
         {
             if (!PreviewCable || Cable == null || Cable.curvatorePoints == null)

@@ -4,7 +4,7 @@ using System;
 
 namespace UHFPS.Rendering
 {
-    [Serializable, VolumeComponentMenu("UHFPS PostProcess/Fear Tentacles")]
+    [Serializable, VolumeComponentMenu("UHFPS Post-Processing/Fear Tentacles")]
     public class FearTentancles : VolumeComponent, IPostProcessComponent
     {
         public ClampedFloatParameter EffectFade = new(0, 0f, 1f);
@@ -15,7 +15,8 @@ namespace UHFPS.Rendering
         public ClampedIntParameter Tentacles = new(20, 10, 50);
         public BoolParameter TopLayer = new(false);
 
-        public bool IsActive() => EffectFade.value > 0f;
+        private bool State => active && EffectFade.overrideState;
+        public bool IsActive() => State && EffectFade.value > 0f;
         public bool IsTileCompatible() => false;
     }
 }

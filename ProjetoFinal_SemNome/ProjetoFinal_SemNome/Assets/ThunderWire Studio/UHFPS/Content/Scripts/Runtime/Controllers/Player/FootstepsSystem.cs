@@ -1,7 +1,7 @@
 using UnityEngine;
 using UHFPS.Scriptable;
 using UHFPS.Tools;
-using static UHFPS.Scriptable.SurfaceDetailsAsset;
+using static UHFPS.Scriptable.SurfaceDefinitionSet;
 
 namespace UHFPS.Runtime
 {
@@ -10,9 +10,9 @@ namespace UHFPS.Runtime
     {
         public enum FootstepStyleEnum { Timed, HeadBob, Animation }
 
-        public SurfaceDetailsAsset SurfaceDetails;
+        public SurfaceDefinitionSet SurfaceDefinitionSet;
         public FootstepStyleEnum FootstepStyle;
-        public SurfaceDetectionEnum SurfaceDetection;
+        public SurfaceDetection SurfaceDetection;
         public LayerMask FootstepsMask;
 
         public float StepPlayerVelocity = 0.1f;
@@ -27,6 +27,8 @@ namespace UHFPS.Runtime
         [Range(0, 1)] public float WalkingVolume = 1f;
         [Range(0, 1)] public float RunningVolume = 1f;
         [Range(0, 1)] public float LandVolume = 1f;
+
+        public SurfaceDefinition CurrentSurface;
 
         private AudioSource audioSource;
         private Collider surfaceUnder;
@@ -62,9 +64,9 @@ namespace UHFPS.Runtime
             {
                 if (surfaceUnder != null)
                 {
-                    SurfaceDetails? surfaceDetails = SurfaceDetails.GetSurfaceDetails(surfaceUnder.gameObject, transform.position, SurfaceDetection);
-                    if (FootstepStyle != FootstepStyleEnum.Animation && surfaceDetails.HasValue)
-                        EvaluateFootsteps(surfaceDetails.Value);
+                    CurrentSurface = SurfaceDefinitionSet.GetSurface(surfaceUnder.gameObject, transform.position, SurfaceDetection);
+                    if (FootstepStyle != FootstepStyleEnum.Animation && CurrentSurface != null)
+                        EvaluateFootsteps(CurrentSurface);
                 }
             }
             else
@@ -74,28 +76,29 @@ namespace UHFPS.Runtime
             }
         }
 
-        private void EvaluateFootsteps(SurfaceDetails surfaceDetails)
+        private void EvaluateFootsteps(SurfaceDefinition surface)
         {
             float playerVelocity = PlayerCollider.velocity.magnitude;
             bool isCrouching = PlayerStateMachine.IsCurrent(PlayerStateMachine.CROUCH_STATE);
             isWalking = PlayerStateMachine.IsCurrent(PlayerStateMachine.WALK_STATE);
             isRunning = PlayerStateMachine.IsCurrent(PlayerStateMachine.RUN_STATE);
 
-            if (isCrouching) return;
+            if (isCrouching)
+                return;
 
             if (FootstepStyle == FootstepStyleEnum.Timed)
             {
                 if(wasInAir)
                 {
                     if(airTime >= LandStepTime) 
-                        PlayFootstep(surfaceDetails, true);
+                        PlayFootstep(surface, true);
 
                     airTime = 0;
                     wasInAir = false;
                 }
                 else if(playerVelocity > StepPlayerVelocity && stepTime <= 0)
                 {
-                    PlayFootstep(surfaceDetails, false);
+                    PlayFootstep(surface, false);
                     stepTime = isWalking ? WalkStepTime : isRunning ? RunStepTime : 0;
                 }
             }
@@ -104,7 +107,7 @@ namespace UHFPS.Runtime
                 if (wasInAir)
                 {
                     if (airTime >= LandStepTime)
-                        PlayFootstep(surfaceDetails, true);
+                        PlayFootstep(surface, true);
 
                     airTime = 0;
                     wasInAir = false;
@@ -114,7 +117,7 @@ namespace UHFPS.Runtime
                     float yWave = PlayerManager.MotionController.BobWave;
                     if (yWave < HeadBobStepWave && !waveStep)
                     {
-                        PlayFootstep(surfaceDetails, false);
+                        PlayFootstep(surface, false);
                         waveStep = true;
                     }
                     else if (yWave > HeadBobStepWave && waveStep)
@@ -125,28 +128,25 @@ namespace UHFPS.Runtime
             }
         }
 
-        private void PlayFootstep(SurfaceDetails surfaceDetails, bool isLand)
+        private void PlayFootstep(SurfaceDefinition surface, bool isLand)
         {
-            var footsteps = surfaceDetails.FootstepProperties;
-            var multipliers = surfaceDetails.MultiplierProperties;
-
-            if (!isLand && footsteps.SurfaceFootsteps.Length > 0)
+            if (!isLand && surface.SurfaceFootsteps.Count > 0)
             {
-                lastStep = GameTools.RandomUnique(0, footsteps.SurfaceFootsteps.Length, lastStep);
-                AudioClip footstep = footsteps.SurfaceFootsteps[lastStep];
+                lastStep = GameTools.RandomUnique(0, surface.SurfaceFootsteps.Count, lastStep);
+                AudioClip footstep = surface.SurfaceFootsteps[lastStep];
 
-                float multiplier = multipliers.FootstepsMultiplier;
-                float volumeScale = (isWalking ? WalkingVolume : isRunning ? RunningVolume : 0f) * multiplier;
+                float volume = surface.FootstepsVolume;
+                float volumeScale = (isWalking ? WalkingVolume : isRunning ? RunningVolume : 0f) * volume;
 
                 audioSource.PlayOneShot(footstep, volumeScale);
             }
-            else if (footsteps.SurfaceLandSteps.Length > 0)
+            else if (surface.SurfaceLandSteps.Count > 0)
             {
-                lastLandStep = GameTools.RandomUnique(0, footsteps.SurfaceLandSteps.Length, lastLandStep);
-                AudioClip landStep = footsteps.SurfaceLandSteps[lastLandStep];
+                lastLandStep = GameTools.RandomUnique(0, surface.SurfaceLandSteps.Count, lastLandStep);
+                AudioClip landStep = surface.SurfaceLandSteps[lastLandStep];
 
-                float multiplier = multipliers.LandStepsMultiplier;
-                float volumeScale = LandVolume * multiplier;
+                float volume = surface.LandStepsVolume;
+                float volumeScale = LandVolume * volume;
 
                 audioSource.PlayOneShot(landStep, volumeScale);
             }
@@ -157,12 +157,12 @@ namespace UHFPS.Runtime
             if (surfaceUnder == null)
                 return;
 
-            SurfaceDetails? surfaceDetails = SurfaceDetails.GetSurfaceDetails(surfaceUnder.gameObject, transform.position, SurfaceDetection);
-            if (surfaceDetails.HasValue)
+            CurrentSurface = SurfaceDefinitionSet.GetSurface(surfaceUnder.gameObject, transform.position, SurfaceDetection);
+            if (CurrentSurface != null)
             {
                 isWalking = !runningStep;
                 isRunning = runningStep;
-                PlayFootstep(surfaceDetails.Value, false);
+                PlayFootstep(CurrentSurface, false);
             }
         }
 
@@ -171,11 +171,8 @@ namespace UHFPS.Runtime
             if (surfaceUnder == null)
                 return;
 
-            SurfaceDetails? surfaceDetails = SurfaceDetails.GetSurfaceDetails(surfaceUnder.gameObject, transform.position, SurfaceDetection);
-            if (surfaceDetails.HasValue)
-            {
-                PlayFootstep(surfaceDetails.Value, true);
-            }
+            CurrentSurface = SurfaceDefinitionSet.GetSurface(surfaceUnder.gameObject, transform.position, SurfaceDetection);
+            if (CurrentSurface != null) PlayFootstep(CurrentSurface, true);
         }
     }
 }

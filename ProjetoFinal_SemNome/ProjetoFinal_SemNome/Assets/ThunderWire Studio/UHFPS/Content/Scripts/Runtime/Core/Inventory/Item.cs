@@ -53,10 +53,16 @@ namespace UHFPS.Runtime
         [Serializable]
         public struct ItemCombineSettings
         {
+            public ushort requiredCurrentAmount;
+            public ushort requiredSecondAmount;
+            public ushort resultItemAmount;
+
             public string combineWithID;
             public string resultCombineID;
             public int playerItemIndex;
 
+            [Tooltip("Use crafting like operations. If you combine two items, their quantity is reduced by the required crafting amount and the resulting item quantity will be set from the resulting item amount.")]
+            public bool isCrafting;
             [Tooltip("After combining, do not remove the item from inventory.")]
             public bool keepAfterCombine;
             [Tooltip("After combining, call the combine event if the second inventory item is a player item. The combine event will be called only on the second item.")]
@@ -75,7 +81,7 @@ namespace UHFPS.Runtime
         public Localization LocalizationSettings;
 
         /// <summary>
-        /// Creates a new instance of a class with the same value as an existing instance.
+        /// Creates a new instance of a class with the same values as an existing instance.
         /// </summary>
         public Item DeepCopy()
         {

@@ -9,19 +9,24 @@ namespace UHFPS.Editors
         public T Target { get; private set; }
         public PropertyCollection Properties { get; private set; }
 
-        private bool settingsFoldout;
+        private SerializedProperty foldoutProperty;
 
         public virtual void OnEnable()
         {
             Target = target as T;
             Properties = EditorDrawing.GetAllProperties(serializedObject);
+            foldoutProperty = Properties["PuzzleCamera"];
         }
 
         public override void OnInspectorGUI()
         {
-            GUIContent puzzleBaseContent = EditorGUIUtility.TrTextContentWithIcon(" Puzzle Base Settings", "Settings");
-            if(EditorDrawing.BeginFoldoutBorderLayout(puzzleBaseContent, ref settingsFoldout))
+            GUIContent headerContent = EditorDrawing.IconTextContent("Puzzle Settings", "Settings");
+            EditorDrawing.SetLabelColor("#E0FBFC");
+
+            if (EditorDrawing.BeginFoldoutBorderLayout(foldoutProperty, headerContent))
             {
+                EditorDrawing.ResetLabelColor();
+
                 using (new EditorDrawing.BorderBoxScope(new GUIContent("Puzzle Camera")))
                 {
                     Properties.Draw("PuzzleCamera");
@@ -53,8 +58,17 @@ namespace UHFPS.Editors
                     EditorGUI.indentLevel--;
                 }
 
+                EditorGUILayout.Space(1f);
+
+                if (EditorDrawing.BeginFoldoutBorderLayout(Properties["OnScreenFade"], new GUIContent("Puzzle Events")))
+                {
+                    Properties.Draw("OnScreenFade");
+                    EditorDrawing.EndBorderHeaderLayout();
+                }
+
                 EditorDrawing.EndBorderHeaderLayout();
             }
+            EditorDrawing.ResetLabelColor();
         }
     }
 }

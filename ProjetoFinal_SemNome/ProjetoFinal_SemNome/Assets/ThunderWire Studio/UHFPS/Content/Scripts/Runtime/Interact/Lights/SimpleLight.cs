@@ -19,19 +19,20 @@ namespace UHFPS.Runtime
 
         private void Awake()
         {
-            if (LightState) SetLightState(true);
+            if (LightState && !SaveGameManager.GameWillLoad) 
+                SetLightState(true);
         }
 
         public void SetLightState(bool state)
         {
             if (state)
             {
-                Light.enabled = true;
+                if (Light) Light.enabled = true;
                 if (UseEmission) LightRenderer.ClonedMaterial.EnableKeyword(EmissionKeyword);
             }
             else
             {
-                Light.enabled = false;
+                if (Light) Light.enabled = false;
                 if (UseEmission) LightRenderer.ClonedMaterial.DisableKeyword(EmissionKeyword);
             }
 

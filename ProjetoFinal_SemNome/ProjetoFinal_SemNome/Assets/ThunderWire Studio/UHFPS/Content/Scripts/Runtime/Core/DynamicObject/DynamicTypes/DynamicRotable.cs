@@ -13,8 +13,6 @@ namespace UHFPS.Runtime
         public float rotationLimit = 360;
         [Tooltip("The axis around which to rotate.")]
         public Axis rotateAroundAxis = Axis.Z;
-        [Tooltip("Rotation offset when the rotatable object has an incorrect rotation.")]
-        public Vector3 rotationOffset = Vector3.zero;
 
         // rotable properties
         [Tooltip("The curve that defines the rotable speed for modifier. 0 = start to 1 = end.")]
@@ -76,12 +74,10 @@ namespace UHFPS.Runtime
                         if(isRotated = !isRotated)
                         {
                             targetAngle = rotationLimit;
-                            DynamicObject.useEvent1?.Invoke();  // rotate on event
                         }
                         else
                         {
                             targetAngle = 0;
-                            DynamicObject.useEvent2?.Invoke();  // rotate off event
                         }
                     }
 
@@ -158,8 +154,9 @@ namespace UHFPS.Runtime
                 if ((holdToRotate && isHolding) || !holdToRotate) 
                     currentAngle = Mathf.MoveTowards(currentAngle, targetAngle, Time.deltaTime * rotationSpeed * 10 * modifier);
 
-                Quaternion rotation = Quaternion.AngleAxis(currentAngle, rotableForward);
-                Target.rotation = rotation * Quaternion.Euler(rotationOffset);
+                Vector3 rotation = Target.localEulerAngles;
+                rotation = rotation.SetComponent(rotateAroundAxis, currentAngle);
+                Target.localEulerAngles = rotation;
             }
             else if(InteractType == DynamicObject.InteractType.Mouse)
             {
@@ -169,18 +166,19 @@ namespace UHFPS.Runtime
                 mouseSmooth = Mathf.MoveTowards(mouseSmooth, targetMove, Time.deltaTime * (targetMove != 0 ? rotationSpeed : damping));
                 currentAngle = Mathf.Clamp(currentAngle + mouseSmooth, 0, rotationLimit);
 
-                Quaternion rotation = Quaternion.AngleAxis(currentAngle, rotableForward);
-                Target.rotation = rotation * Quaternion.Euler(rotationOffset);
+                Vector3 rotation = Target.localEulerAngles;
+                rotation = rotation.SetComponent(rotateAroundAxis, currentAngle);
+                Target.localEulerAngles = rotation;
             }
 
             if(InteractType != DynamicObject.InteractType.Animation)
             {
-                if (t > 0.99f && !isRotated)
+                if (t >= 1f && !isRotated)
                 {
                     DynamicObject.useEvent1?.Invoke();  // rotate on event
                     isRotated = true;
                 }
-                else if (t < 0.01f && isRotated)
+                else if (t <= 0f && isRotated)
                 {
                     DynamicObject.useEvent2?.Invoke();  // rotate off event
                     isRotated = false;

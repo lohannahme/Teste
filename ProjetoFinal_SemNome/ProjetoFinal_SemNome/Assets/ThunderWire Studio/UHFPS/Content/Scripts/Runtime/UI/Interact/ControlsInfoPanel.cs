@@ -22,7 +22,7 @@ namespace UHFPS.Runtime
     {
         public InteractButton[] InteractButtons;
 
-        private Stack<ControlsContext[]> contextsQueue = new();
+        private readonly Stack<ControlsContext[]> contextsQueue = new();
         private BindingPath[] bindingPaths;
 
         public void ShowInfo(ControlsContext[] contexts)

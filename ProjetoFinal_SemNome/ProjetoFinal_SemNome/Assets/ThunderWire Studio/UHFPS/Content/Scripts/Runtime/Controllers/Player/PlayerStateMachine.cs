@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reactive.Subjects;
+using System.Collections.Generic;
 using UnityEngine;
 using UHFPS.Input;
 using UHFPS.Tools;
@@ -63,25 +64,27 @@ namespace UHFPS.Runtime
             }
         }
 
-        public State? CurrentState => currentState;
+        public State CurrentState => currentState;
 
-        public State? PreviousState => previousState;
+        public State PreviousState => previousState;
 
-        public string CurrentStateKey => CurrentState?.stateData.stateAsset.GetStateKey();
+        public string CurrentStateKey => CurrentState?.stateData.stateAsset.StateKey;
         #endregion
 
         #region Structures
+        public const string PREVIOUS_STATE = "_Previous";
+
         public const string IDLE_STATE = "Idle";
         public const string WALK_STATE = "Walk";
         public const string RUN_STATE = "Run";
         public const string CROUCH_STATE = "Crouch";
         public const string JUMP_STATE = "Jump";
-        public const string DEATH_STATE = "Death";
 
         public const string LADDER_STATE = "Ladder";
         public const string ZIPLINE_STATE = "Zipline";
         public const string SLIDING_STATE = "Sliding";
         public const string PUSHING_STATE = "Pushing";
+        public const string DEATH_STATE = "Death";
 
         [Serializable]
         public sealed class BasicSettings
@@ -95,13 +98,18 @@ namespace UHFPS.Runtime
         [Serializable]
         public sealed class ControllerFeatures
         {
-            public bool EnableJump = true;
-            public bool EnableRun = true;
-            public bool EnableCrouch = true;
             public bool EnableStamina = false;
             public bool RunToggle = false;
             public bool CrouchToggle = false;
             public bool NormalizeMovement = false;
+        }
+
+        [Serializable]
+        public sealed class SlidingSettings
+        {
+            public LayerMask SlidingMask;
+            public float SlideRayLength = 1f;
+            public float SlopeLimit = 45f;
         }
 
         [Serializable]
@@ -118,9 +126,11 @@ namespace UHFPS.Runtime
         {
             public float BaseGravity = -9.81f;
             public float PlayerWeight = 70f;
+            public float SkinWidthOffset = 0.05f;
+            public float FeetRadius = 0.1f;
             public float AntiBumpFactor = 4.5f;
             public float WallRicochet = 0.1f;
-            public float StateChangeSpeed = 3f;
+            public float StateChangeSmooth = 1.35f;
         }
 
         [Serializable]
@@ -130,7 +140,7 @@ namespace UHFPS.Runtime
             public Vector3 CameraOffset;
         }
 
-        public struct State
+        public sealed class State
         {
             public PlayerStateData stateData;
             public FSMPlayerState fsmState;
@@ -147,6 +157,7 @@ namespace UHFPS.Runtime
 
         public BasicSettings PlayerBasicSettings;
         public ControllerFeatures PlayerFeatures;
+        public SlidingSettings PlayerSliding;
         public StaminaSettings PlayerStamina;
         public ControllerSettings PlayerControllerSettings;
 
@@ -184,8 +195,8 @@ namespace UHFPS.Runtime
         {
             get
             {
-                if (currentState.HasValue)
-                    return currentState?.stateData.stateAsset.GetStateKey();
+                if (currentState != null)
+                    return currentState?.stateData.stateAsset.StateKey;
 
                 return "None";
             }
@@ -196,11 +207,16 @@ namespace UHFPS.Runtime
         /// </summary>
         public BehaviorSubject<string> ObservableState = new("None");
 
+        private readonly List<ICharacterControllerHit> currentSurfaces = new();
         private MultiKeyDictionary<string, Type, State> playerStates;
-        private State? currentState;
-        private State? previousState;
+
+        private State currentState;
+        private State previousState;
+
         private bool stateEntered;
         private float staminaRegenTime;
+
+        private Vector3 externalForce;
         private Mesh playerGizmos;
 
         private void Awake()
@@ -214,7 +230,7 @@ namespace UHFPS.Runtime
                 foreach (var playerState in StatesAssetRuntime.GetStates(this))
                 {
                     Type stateType = playerState.stateData.stateAsset.GetType();
-                    string stateKey = playerState.stateData.stateAsset.GetStateKey();
+                    string stateKey = playerState.stateData.stateAsset.StateKey;
                     playerStates.Add(stateKey, stateType, playerState);
                 }
 
@@ -243,7 +259,7 @@ namespace UHFPS.Runtime
             {
                 // enter state
                 currentState?.fsmState.OnStateEnter();
-                string stateName = currentState?.stateData.stateAsset.GetStateKey();
+                string stateName = currentState?.stateData.stateAsset.StateKey;
                 ObservableState.OnNext(stateName);
                 stateEntered = true;
             }
@@ -253,15 +269,23 @@ namespace UHFPS.Runtime
                 currentState?.fsmState.OnStateUpdate();
 
                 // check state transitions
-                if (currentState.Value.fsmState.Transitions != null)
+                if (currentState.fsmState.Transitions != null)
                 {
-                    foreach (var transition in currentState.Value.fsmState.Transitions)
+                    foreach (var transition in currentState.fsmState.Transitions)
                     {
-                        if (transition.Value && currentState.GetType() != transition.NextState)
+                        string nextStateKey = transition.NextStateKey;
+                        if (playerStates.TryGetValue(nextStateKey, out State state))
                         {
-                            if (transition.NextState == null) ChangeToPreviousState();
-                            else ChangeState(transition.NextState);
-                            break;
+                            if (state.stateData.isEnabled && StateName != nextStateKey && transition.Value)
+                            {
+                                if (playerStates.ContainsKey(nextStateKey))
+                                {
+                                    if (nextStateKey == PREVIOUS_STATE)
+                                        ChangeToPreviousState();
+                                    else ChangeState(state);
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
@@ -288,8 +312,46 @@ namespace UHFPS.Runtime
                 }
             }
 
+            float feetRadius = PlayerControllerSettings.FeetRadius;
+            float maxDistance = Controller.skinWidth + PlayerControllerSettings.SkinWidthOffset + feetRadius;
+            Vector3 rayOrigin = ControllerFeet + Vector3.up * (feetRadius + Controller.skinWidth);
+            Ray groundRay = new(rayOrigin, Vector3.down);
+
+            // raycast for character controller enter/exit event
+            if (Physics.SphereCast(groundRay, feetRadius, out RaycastHit hit, maxDistance, SurfaceMask, QueryTriggerInteraction.Collide))
+            {
+                if (hit.collider.gameObject.TryGetComponent(out ICharacterControllerHit newSurface))
+                {
+                    if (!currentSurfaces.Contains(newSurface))
+                    {
+                        newSurface.OnCharacterControllerEnter(Controller);
+
+                        currentSurfaces.ForEach(x => x.OnCharacterControllerExit());
+                        currentSurfaces.Clear();
+                        currentSurfaces.Add(newSurface);
+                    }
+                }
+                else
+                {
+                    currentSurfaces.ForEach(x => x.OnCharacterControllerExit());
+                    currentSurfaces.Clear();
+                }
+            }
+            else
+            {
+                currentSurfaces.ForEach(x => x.OnCharacterControllerExit());
+                currentSurfaces.Clear();
+            }
+
+            // apply external force
+            if (externalForce != Vector3.zero)
+            {
+                Motion += externalForce;
+                externalForce = Vector3.zero;
+            }
+
             // apply movement direction
-            if(Controller.enabled) IsGrounded = (Controller.Move(Motion * Time.deltaTime) & CollisionFlags.Below) != 0;
+            if (Controller.enabled) IsGrounded = (Controller.Move(Motion * Time.deltaTime) & CollisionFlags.Below) != 0;
         }
 
         private void FixedUpdate()
@@ -344,6 +406,34 @@ namespace UHFPS.Runtime
         }
 
         /// <summary>
+        /// Set state enabled value. (Can transition to the state condition.)
+        /// </summary>
+        public void SetStateEnabled(string stateKey, bool enabled)
+        {
+            if (playerStates.TryGetValue(stateKey, out State state))
+            {
+                state.stateData.isEnabled = enabled;
+            }
+        }
+
+        /// <summary>
+        /// Add external force to the player motion.
+        /// </summary>
+        public void AddForce(Vector3 force, ForceMode mode)
+        {
+            float mass = PlayerControllerSettings.PlayerWeight;
+
+            externalForce += mode switch
+            {
+                ForceMode.Force => force * (1f / mass),
+                ForceMode.Acceleration => force * Time.deltaTime,
+                ForceMode.Impulse => force * (1f / mass),
+                ForceMode.VelocityChange => force,
+                _ => throw new ArgumentException(nameof(mode)),
+            };
+        }
+
+        /// <summary>
         /// Set player controller state.
         /// </summary>
         public Vector3 SetControllerState(ControllerState state)
@@ -380,10 +470,10 @@ namespace UHFPS.Runtime
                 if (!isEnabled && !state.fsmState.CanTransitionWhenDisabled)
                     return;
 
-                if ((currentState == null || !currentState.Value.Equals(state)) && state.stateData.isEnabled)
+                if ((currentState == null || !currentState.Equals(state)) && state.stateData.isEnabled)
                 {
                     currentState?.fsmState.OnStateExit();
-                    if (currentState.HasValue) previousState = currentState;
+                    if (currentState != null) previousState = currentState;
                     currentState = state;
                     stateEntered = false;
                 }
@@ -403,10 +493,10 @@ namespace UHFPS.Runtime
                 if (!isEnabled && !state.fsmState.CanTransitionWhenDisabled)
                     return;
 
-                if ((currentState == null || !currentState.Value.Equals(state)) && state.stateData.isEnabled)
+                if ((currentState == null || !currentState.Equals(state)) && state.stateData.isEnabled)
                 {
                     currentState?.fsmState.OnStateExit();
-                    if (currentState.HasValue) previousState = currentState;
+                    if (currentState != null) previousState = currentState;
                     currentState = state;
                     stateEntered = false;
                 }
@@ -419,6 +509,23 @@ namespace UHFPS.Runtime
         /// <summary>
         /// Change player FSM state.
         /// </summary>
+        public void ChangeState(State state)
+        {
+            if (!isEnabled && !state.fsmState.CanTransitionWhenDisabled)
+                return;
+
+            if ((currentState == null || !currentState.Equals(state)))
+            {
+                currentState?.fsmState.OnStateExit();
+                if (currentState != null) previousState = currentState;
+                currentState = state;
+                stateEntered = false;
+            }
+        }
+
+        /// <summary>
+        /// Change player FSM state.
+        /// </summary>
         public void ChangeState(string nextState)
         {
             if (playerStates.TryGetValue(nextState, out State state))
@@ -426,10 +533,10 @@ namespace UHFPS.Runtime
                 if (!isEnabled && !state.fsmState.CanTransitionWhenDisabled)
                     return;
 
-                if ((currentState == null || !currentState.Value.Equals(state)) && state.stateData.isEnabled)
+                if ((currentState == null || !currentState.Equals(state)) && state.stateData.isEnabled)
                 {
                     currentState?.fsmState.OnStateExit();
-                    if (currentState.HasValue) previousState = currentState;
+                    if (currentState != null) previousState = currentState;
                     currentState = state;
                     stateEntered = false;
                 }
@@ -449,10 +556,10 @@ namespace UHFPS.Runtime
                 if (!isEnabled && !state.fsmState.CanTransitionWhenDisabled)
                     return;
 
-                if ((currentState == null || !currentState.Value.Equals(state)) && state.stateData.isEnabled)
+                if ((currentState == null || !currentState.Equals(state)) && state.stateData.isEnabled)
                 {
                     currentState?.fsmState.OnStateExit();
-                    if (currentState.HasValue) previousState = currentState;
+                    if (currentState != null) previousState = currentState;
                     state.fsmState.StateData = stateData;
                     currentState = state;
                     stateEntered = false;
@@ -468,13 +575,13 @@ namespace UHFPS.Runtime
         /// </summary>
         public void ChangeToPreviousState()
         {
-            if (previousState != null && !currentState.Value.Equals(previousState) && previousState.Value.stateData.isEnabled)
+            if (previousState != null && !currentState.Equals(previousState) && previousState.stateData.isEnabled)
             {
-                if (!isEnabled && !previousState.Value.fsmState.CanTransitionWhenDisabled)
+                if (!isEnabled && !previousState.fsmState.CanTransitionWhenDisabled)
                     return;
 
                 currentState?.fsmState.OnStateExit();
-                State temp = currentState.Value;
+                State temp = currentState;
                 currentState = previousState;
                 previousState = temp;
                 stateEntered = false;
@@ -486,7 +593,7 @@ namespace UHFPS.Runtime
         /// </summary>
         public bool IsCurrent(Type stateType)
         {
-            return currentState.Value.stateData.stateAsset.GetType() == stateType;
+            return currentState?.stateData.stateAsset.GetType() == stateType;
         }
 
         /// <summary>
@@ -494,7 +601,7 @@ namespace UHFPS.Runtime
         /// </summary>
         public bool IsCurrent(string stateKey)
         {
-            return currentState.Value.stateData.stateAsset.GetStateKey() == stateKey;
+            return currentState?.stateData.stateAsset.StateKey == stateKey;
         }
 
         private void OnDrawGizmosSelected()
@@ -517,6 +624,9 @@ namespace UHFPS.Runtime
                 Gizmos.color = Color.red;
                 GizmosE.DrawGizmosArrow(ControllerFeet, lookRotation * 0.5f);
             }
+
+            Gizmos.color = Color.white;
+            Gizmos.DrawRay(ControllerFeet, Vector3.down * (Controller.skinWidth + PlayerControllerSettings.SkinWidthOffset));
         }
 
         private void OnDrawGizmos()

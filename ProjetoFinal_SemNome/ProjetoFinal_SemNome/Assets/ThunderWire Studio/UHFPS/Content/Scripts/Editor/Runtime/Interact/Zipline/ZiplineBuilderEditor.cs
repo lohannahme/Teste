@@ -25,6 +25,12 @@ namespace UHFPS.Editors
                 {
                     Properties.Draw("ZiplineEnd");
                     Properties.Draw("CenterOffset");
+
+                    EditorGUILayout.Space(2f);
+                    if (GUILayout.Button("Reset Zipline End", GUILayout.Height(20f)))
+                    {
+                        Target.ResetEndPosition();
+                    }
                 }
 
                 EditorGUILayout.Space();
@@ -69,7 +75,7 @@ namespace UHFPS.Editors
                     if (GUILayout.Button("Build Zipline", GUILayout.Height(25f)))
                     {
                         Vector3 startPosition = Target.transform.position;
-                        Vector3 endPosition = startPosition + Target.ZiplineEnd;
+                        Vector3 endPosition = Target.ZiplineEnd;
 
                         if (Vector3.Distance(startPosition, endPosition) >= 2)
                         {
@@ -105,8 +111,8 @@ namespace UHFPS.Editors
                             endAngles.y = endLook.eulerAngles.y;
                             ziplineEnd.transform.eulerAngles = endAngles;
 
-                            ProceduralCableEnd cableStart = ziplineStart.GetComponentInChildren<ProceduralCableEnd>();
-                            ProceduralCableEnd cableEnd = ziplineEnd.GetComponentInChildren<ProceduralCableEnd>();
+                            ProceduralCablePoint cableStart = ziplineStart.GetComponentInChildren<ProceduralCablePoint>();
+                            ProceduralCablePoint cableEnd = ziplineEnd.GetComponentInChildren<ProceduralCablePoint>();
 
                             GameObject cable = new GameObject("ZiplineCable");
                             cable.transform.SetParent(Target.transform);
@@ -143,6 +149,12 @@ namespace UHFPS.Editors
                         }
                     }
                 }
+
+                if(Target.ZiplineRack == null)
+                {
+                    EditorGUILayout.Space(2f);
+                    EditorGUILayout.HelpBox("Please assign a ZiplineRack object to build a zipline.", MessageType.Warning);
+                }
             }
             serializedObject.ApplyModifiedPropertiesWithoutUndo();
         }
@@ -150,14 +162,14 @@ namespace UHFPS.Editors
         private void OnSceneGUI()
         {
             EditorGUI.BeginChangeCheck();
-            Vector3 endPosition = Handles.PositionHandle(Target.transform.position + Target.ZiplineEnd, Quaternion.identity);
+            Vector3 endPosition = Handles.PositionHandle(Target.ZiplineEnd, Quaternion.identity);
             if (EditorGUI.EndChangeCheck())
             {
-                Target.ZiplineEnd = endPosition - Target.transform.position;
+                Target.ZiplineEnd = endPosition;
             }
 
             Handles.Label(Target.transform.position, "Start Position");
-            if(Target.ZiplineEnd.magnitude > 0.1f)
+            if(Vector3.Distance(Target.transform.position, Target.ZiplineEnd) > 0.1f)
                 Handles.Label(endPosition, "End Position");
         }
     }

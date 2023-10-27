@@ -23,9 +23,9 @@ namespace UHFPS.Runtime.States
             return new ZiplinePlayerState(machine, this);
         }
 
-        public override string GetStateKey() => PlayerStateMachine.ZIPLINE_STATE;
+        public override string StateKey => PlayerStateMachine.ZIPLINE_STATE;
 
-        public override string ToString() => "Zipline";
+        public override string Name => "Generic/Zipline";
 
         public class ZiplinePlayerState : FSMPlayerState
         {
@@ -53,11 +53,11 @@ namespace UHFPS.Runtime.States
             {
                 return new Transition[]
                 {
-                    Transition.To<IdleStateAsset>(() =>
+                    Transition.To(PlayerStateMachine.IDLE_STATE, () =>
                     {
                         return exitState || InputManager.ReadButtonOnce("WalkState", Controls.JUMP);
                     }),
-                    Transition.To<DeathStateAsset>(() => IsDead)
+                    Transition.To(PlayerStateMachine.DEATH_STATE, () => IsDead)
                 };
             }
 

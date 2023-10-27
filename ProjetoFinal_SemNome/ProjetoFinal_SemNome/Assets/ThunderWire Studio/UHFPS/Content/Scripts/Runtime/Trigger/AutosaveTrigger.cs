@@ -20,7 +20,7 @@ namespace UHFPS.Runtime
 
         public void TriggerAutosave()
         {
-            if (isSaved || SaveGameManager.IsGameJustLoaded) 
+            if (isSaved || SaveGameManager.GameWillLoad) 
                 return;
 
             isSaved = true;

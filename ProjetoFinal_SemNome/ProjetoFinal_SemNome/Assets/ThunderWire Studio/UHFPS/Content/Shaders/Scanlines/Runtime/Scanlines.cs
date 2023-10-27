@@ -4,7 +4,7 @@ using System;
 
 namespace UHFPS.Rendering
 {
-    [Serializable, VolumeComponentMenu("UHFPS PostProcess/Scanlines")]
+    [Serializable, VolumeComponentMenu("UHFPS Post-Processing/Scanlines")]
     public class Scanlines : VolumeComponent, IPostProcessComponent
     {
         public ClampedFloatParameter ScanlinesStrength = new (0f, 0f, 2f);
@@ -15,7 +15,8 @@ namespace UHFPS.Rendering
         public FloatParameter GlitchIntensity = new(0);
         public FloatParameter GlitchFrequency = new (0);
 
-        public bool IsActive() => ScanlinesStrength.value > 0;
+        private bool State => active && ScanlinesStrength.overrideState;
+        public bool IsActive() => State && ScanlinesStrength.value > 0;
         public bool IsTileCompatible() => false;
     }
 }

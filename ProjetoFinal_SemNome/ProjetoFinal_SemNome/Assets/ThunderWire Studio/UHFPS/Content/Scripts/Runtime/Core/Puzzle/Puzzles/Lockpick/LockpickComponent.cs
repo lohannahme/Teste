@@ -26,7 +26,6 @@ namespace UHFPS.Runtime
         public SoundClip Unlock;
         public SoundClip BobbyPinBreak;
 
-        private PlayerPresenceManager playerPresence;
         private PlayerManager playerManager;
         private LockpickInteract lockpick;
         private GameManager gameManager;
@@ -52,7 +51,6 @@ namespace UHFPS.Runtime
         {
             this.lockpick = lockpick;
             gameManager = lockpick.GameManager;
-            playerPresence = lockpick.PlayerPresence;
             playerManager = lockpick.PlayerManager;
 
             keyholeLimits = new MinMax(0, KeyholeUnlockAngle);
@@ -74,7 +72,8 @@ namespace UHFPS.Runtime
 
         private void Update()
         {
-            if (!isActive) return;
+            if (!isActive)
+                return;
 
             if(KeyholeCopyLocation != null)
             {

@@ -69,13 +69,17 @@ namespace UHFPS.Runtime
 
         public void InteractStart()
         {
-            if (IsDynamicUnlockComponent || isUnlocked) return;
+            if (IsDynamicUnlockComponent || isUnlocked) 
+                return;
+
             AttemptToUnlock();
         }
 
         public void OnTryUnlock(DynamicObject dynamicObject)
         {
-            if (!IsDynamicUnlockComponent || isUnlocked) return;
+            if (!IsDynamicUnlockComponent || isUnlocked) 
+                return;
+
             DynamicObject = dynamicObject;
             AttemptToUnlock();
         }
@@ -84,7 +88,7 @@ namespace UHFPS.Runtime
         {
             Vector3 holdPosition = MainCamera.transform.position + MainCamera.transform.forward * LockpickDistance;
             Quaternion faceRotation = Quaternion.LookRotation(MainCamera.transform.forward) * Quaternion.Euler(LockpickRotation);
-            GameObject lockpickObj = Instantiate(LockpickModel, holdPosition, faceRotation, PlayerPresence.PlayerManager.MainVirtualCamera.transform);
+            GameObject lockpickObj = Instantiate(LockpickModel, holdPosition, faceRotation, PlayerManager.MainVirtualCamera.transform);
             LockpickComponent lockpickComponent = lockpickObj.GetComponent<LockpickComponent>();
 
             PlayerManager.PlayerItems.IsItemsUsable = false;

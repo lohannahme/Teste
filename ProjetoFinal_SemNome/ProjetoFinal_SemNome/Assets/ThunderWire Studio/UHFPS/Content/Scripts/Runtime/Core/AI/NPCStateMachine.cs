@@ -153,9 +153,9 @@ namespace UHFPS.Runtime
                 {
                     foreach (var transition in currentState.Value.FSMState.Transitions)
                     {
-                        if (transition.Value && currentState.GetType() != transition.NextState)
+                        if (transition.Value && currentState.GetType() != transition.NextStateType)
                         {
-                            ChangeState(transition.NextState);
+                            ChangeState(transition.NextStateType);
                             break;
                         }
                     }

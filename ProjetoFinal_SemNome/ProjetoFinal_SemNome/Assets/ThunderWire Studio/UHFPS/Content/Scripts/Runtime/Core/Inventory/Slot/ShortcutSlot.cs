@@ -1,18 +1,25 @@
 using UnityEngine;
 using UnityEngine.UI;
+using ThunderWire.Attributes;
 using TMPro;
 
 namespace UHFPS.Runtime
 {
+    [InspectorHeader("Shortcut Slot")]
     public class ShortcutSlot : MonoBehaviour
     {
+        public Vector2 ItemRectSize;
+
+        [Header("Panels")]
         public GameObject ItemPanel;
+        public GameObject QuantityPanel;
 
         [Header("References")]
-        public CanvasGroup FadePanel;
-        public Image Background;
         public Image ItemIcon;
-        public TMP_Text Quantity;
+        public Image Background;
+
+        [Header("Settings")]
+        public bool ShowQuantity;
 
         [Header("Slot Colors")]
         public Color EmptySlotColor;
@@ -20,6 +27,12 @@ namespace UHFPS.Runtime
 
         private InventoryItem inventoryItem;
         private Inventory inventory;
+        private TMP_Text quantity;
+
+        private void Awake()
+        {
+            quantity = QuantityPanel.GetComponentInChildren<TMP_Text>();
+        }
 
         public void SetItem(InventoryItem inventoryItem)
         {
@@ -31,8 +44,7 @@ namespace UHFPS.Runtime
                 Item item = inventoryItem.Item;
 
                 // icon orientation and scaling
-                Vector2 slotSize = ItemIcon.rectTransform.rect.size;
-                slotSize -= new Vector2(10, 10);
+                Vector2 slotSize = ItemRectSize;
                 Vector2 iconSize = item.Icon.rect.size;
 
                 Vector2 scaleRatio = slotSize / iconSize;
@@ -40,19 +52,17 @@ namespace UHFPS.Runtime
 
                 ItemIcon.sprite = item.Icon;
                 ItemIcon.rectTransform.sizeDelta = iconSize * scaleFactor;
-                Quantity.text = inventoryItem.Quantity.ToString();
 
                 Background.color = NormalSlotColor;
-                FadePanel.alpha = 1f;
                 ItemPanel.SetActive(true);
             }
             else
             {
                 ItemIcon.sprite = null;
-                Quantity.text = string.Empty;
+                quantity.text = string.Empty;
+                QuantityPanel.SetActive(false);
 
                 Background.color = EmptySlotColor;
-                FadePanel.alpha = 0.5f;
                 ItemPanel.SetActive(false);
             }
         }
@@ -71,14 +81,19 @@ namespace UHFPS.Runtime
 
             if (!inventoryItem.Item.Settings.alwaysShowQuantity)
             {
-                if (itemQuantity > 1) 
-                    Quantity.text = inventoryItem.Quantity.ToString();
-                else Quantity.text = string.Empty;
+                if (itemQuantity > 1)
+                    quantity.text = inventoryItem.Quantity.ToString();
+                else
+                {
+                    QuantityPanel.SetActive(false);
+                    quantity.text = string.Empty;
+                }
             }
             else
             {
-                Quantity.text = itemQuantity.ToString();
-                Quantity.color = itemQuantity >= 1
+                QuantityPanel.SetActive(true);
+                quantity.text = itemQuantity.ToString();
+                quantity.color = itemQuantity >= 1
                     ? inventory.slotSettings.normalQuantityColor
                     : inventory.slotSettings.zeroQuantityColor;
             }

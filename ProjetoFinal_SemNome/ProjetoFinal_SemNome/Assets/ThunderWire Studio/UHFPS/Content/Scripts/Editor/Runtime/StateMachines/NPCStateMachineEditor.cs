@@ -10,6 +10,8 @@ namespace UHFPS.Editors
     [CustomEditor(typeof(NPCStateMachine))]
     public class NPCStateMachineEditor : InspectorEditor<NPCStateMachine>
     {
+        public static Texture2D FSMIcon => Resources.Load<Texture2D>("EditorIcons/fsm");
+
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
@@ -49,7 +51,6 @@ namespace UHFPS.Editors
 
                 if (Target.StatesAsset != null)
                 {
-                    Vector2 iconSize = EditorGUIUtility.GetIconSize();
                     SerializedObject statesSerializedObject = Application.isPlaying && Target.StatesAssetRuntime != null
                         ? new SerializedObject(Target.StatesAssetRuntime)
                         : new SerializedObject(Target.StatesAsset);
@@ -61,14 +62,20 @@ namespace UHFPS.Editors
                     {
                         if (stateProperties.Count > 2)
                         {
-                            if (EditorDrawing.BeginFoldoutBorderLayout(stateProperties["AIStates"], new GUIContent("Global Variables" + (Application.isPlaying ? "*" : ""))))
+                            GUIContent stateHeader = EditorDrawing.IconTextContent("State Properties" + (Application.isPlaying ? "*" : ""), "Settings");
+
+                            EditorDrawing.SetLabelColor("#E0FBFC");
+                            if (EditorDrawing.BeginFoldoutBorderLayout(stateProperties["AIStates"], stateHeader))
                             {
+                                EditorDrawing.ResetLabelColor();
                                 foreach (var item in stateProperties.Skip(2))
                                 {
                                     EditorGUILayout.PropertyField(item.Value);
                                 }
                                 EditorDrawing.EndBorderHeaderLayout();
                             }
+                            EditorDrawing.ResetLabelColor();
+                            EditorDrawing.ResetIconSize();
                             EditorGUILayout.Space(EditorGUIUtility.standardVerticalSpacing);
                         }
 
@@ -95,10 +102,12 @@ namespace UHFPS.Editors
                                 bool toggle = isEnabled.boolValue;
 
                                 string name = stateAsset.objectReferenceValue.ToString();
-                                EditorGUIUtility.SetIconSize(new Vector2(14, 14));
-                                GUIContent title = EditorGUIUtility.TrTextContentWithIcon(" " + name, "NavMeshAgent Icon");
+                                EditorDrawing.SetIconSize(12f);
+
+                                GUIContent title = EditorGUIUtility.TrTextContentWithIcon(" " + name, FSMIcon);
                                 Rect header = EditorDrawing.DrawScriptableBorderFoldoutToggle(stateAsset, title, ref expanded, ref toggle);
 
+                                EditorDrawing.ResetIconSize();
                                 state.isExpanded = expanded;
                                 isEnabled.boolValue = toggle;
 
@@ -127,7 +136,6 @@ namespace UHFPS.Editors
                     }
                     statesSerializedObject.ApplyModifiedProperties();
 
-                    EditorGUIUtility.SetIconSize(iconSize);
                     EditorGUILayout.Space(EditorGUIUtility.standardVerticalSpacing);
                     EditorGUILayout.HelpBox("To add new states open AI state asset.", MessageType.Info);
                 }

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using UHFPS.Runtime;
 using ThunderWire.Editors;
+using Cinemachine;
 
 namespace UHFPS.Editors
 {
@@ -17,20 +18,72 @@ namespace UHFPS.Editors
 
             serializedObject.Update();
             {
+                EditorGUILayout.BeginVertical(GUI.skin.box);
+                Properties.Draw("TriggerType");
                 Properties.Draw("CutsceneType");
                 Properties.Draw("Cutscene");
+                EditorGUILayout.EndVertical();
 
-                if(cutsceneType == CutsceneTrigger.CutsceneTypeEnum.CameraCutscene)
+                if (cutsceneType == CutsceneTrigger.CutsceneTypeEnum.CameraCutscene)
                 {
                     EditorGUILayout.Space();
-                    Properties.Draw("CutsceneCamera");
-                    Properties.Draw("CutsceneFadeSpeed");
+
+                    using (new EditorDrawing.BorderBoxScope())
+                    {
+                        Properties.Draw("WaitForDialogue");
+                    }
+                    EditorGUILayout.Space();
+
+                    using (new EditorDrawing.BorderBoxScope())
+                    {
+                        EditorGUILayout.LabelField("Blend Settings", EditorStyles.miniBoldLabel);
+                        Properties.Draw("CutsceneCamera");
+                        Properties.Draw("CutsceneFadeSpeed");
+                    }
                 }
                 else
                 {
                     EditorGUILayout.Space();
-                    Properties.Draw("InitialPosition");
-                    Properties.Draw("InitialLook");
+                    using (new EditorDrawing.BorderBoxScope())
+                    {
+                        Properties.Draw("CutscenePlayer");
+                        Properties.Draw("WaitForDialogue");
+                    }
+                    EditorGUILayout.Space();
+
+                    SerializedProperty blendDefinition = Properties["BlendDefinition"];
+                    SerializedProperty style = blendDefinition.FindPropertyRelative("m_Style");
+                    SerializedProperty time = blendDefinition.FindPropertyRelative("m_Time");
+                    SerializedProperty curve = blendDefinition.FindPropertyRelative("m_CustomCurve");
+
+                    CinemachineBlendDefinition.Style blendStyle = (CinemachineBlendDefinition.Style)style.enumValueIndex;
+
+                    using (new EditorDrawing.BorderBoxScope())
+                    {
+                        EditorGUILayout.LabelField("Blend Definition", EditorStyles.miniBoldLabel);
+                        EditorGUILayout.PropertyField(style);
+                        EditorGUILayout.PropertyField(time);
+
+                        if(blendStyle == CinemachineBlendDefinition.Style.Custom)
+                            EditorGUILayout.PropertyField(curve);
+
+                        EditorGUILayout.Space();
+                        EditorGUILayout.BeginVertical(GUI.skin.box);
+                        EditorGUILayout.LabelField("Custom Blending", EditorStyles.miniBoldLabel);
+                        Properties.Draw("CustomBlendAsset");
+                        EditorGUILayout.EndVertical();
+                    }
+
+                    EditorGUILayout.Space();
+
+                    using (new EditorDrawing.BorderBoxScope())
+                    {
+                        EditorGUILayout.LabelField("Blend Settings", EditorStyles.miniBoldLabel);
+
+                        Properties.Draw("WaitForBlendIn");
+                        Properties.Draw("BlendInOffset");
+                        Properties.Draw("BlendOutTime");
+                    }
                 }
 
                 EditorGUILayout.Space();

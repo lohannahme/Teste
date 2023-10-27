@@ -25,7 +25,43 @@ namespace UHFPS.Editors
 
                 if (Properties.BoolValue("SpawnRandomItem"))
                 {
-                    EditorDrawing.DrawList(Properties["CrateItems"], new GUIContent("Crate Items"));
+                    if (EditorDrawing.BeginFoldoutBorderLayout(Properties["CrateItems"], new GUIContent("Crate Items")))
+                    {
+                        int arraySize = EditorDrawing.BeginDrawCustomList(Properties["CrateItems"], new GUIContent("Items"));
+                        {
+                            for (int i = 0; i < arraySize; i++)
+                            {
+                                SerializedProperty element = Properties["CrateItems"].GetArrayElementAtIndex(i);
+                                SerializedProperty item = element.FindPropertyRelative("Item");
+                                SerializedProperty probability = element.FindPropertyRelative("Probability");
+
+                                if (EditorDrawing.BeginFoldoutBorderLayout(element, new GUIContent($"Item {i}"), out Rect itemRect, roundedBox: false))
+                                {
+                                    EditorGUILayout.PropertyField(item);
+                                    EditorGUILayout.PropertyField(probability);
+                                    EditorDrawing.EndBorderHeaderLayout();
+                                }
+
+                                Rect minusIcon = itemRect;
+                                minusIcon.xMin = minusIcon.xMax - EditorGUIUtility.singleLineHeight - 2f;
+                                minusIcon.y += 4f;
+
+                                if (GUI.Button(minusIcon, EditorUtils.Styles.MinusIcon, EditorStyles.iconButton))
+                                {
+                                    Properties["CrateItems"].DeleteArrayElementAtIndex(i);
+                                    break;
+                                }
+                            }
+                        }
+                        EditorDrawing.EndDrawCustomList(new GUIContent("Add Item"), true, () =>
+                        {
+                            Target.CrateItems.Add(new());
+                            serializedObject.ApplyModifiedProperties();
+                        });
+
+                        EditorDrawing.EndBorderHeaderLayout();
+                    }
+
                     EditorGUILayout.Space(2f);
                 }
                 else
@@ -40,7 +76,8 @@ namespace UHFPS.Editors
                 using(new EditorDrawing.BorderBoxScope(new GUIContent("Breakable Settings")))
                 {
                     Properties.Draw("SpawnRandomItem");
-                    Properties.Draw("ShowFLoatingIcon");
+                    Properties.Draw("ShowFloatingIcon");
+                    Properties.Draw("EnableItemsGravity");
                     Properties.Draw("PiecesKeepTime");
                     Properties.Draw("BrokenRotation");
                     Properties.Draw("SpawnedRotation");

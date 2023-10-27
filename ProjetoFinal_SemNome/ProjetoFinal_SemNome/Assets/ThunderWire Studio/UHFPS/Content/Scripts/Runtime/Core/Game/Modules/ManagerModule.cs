@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using UnityEngine;
 
 namespace UHFPS.Runtime
 {
@@ -26,5 +28,21 @@ namespace UHFPS.Runtime
         /// Override this method to define your own behavior at Update.
         /// </summary>
         public virtual void OnUpdate() { }
+
+        /// <summary>
+        /// Start coroutine on a GameManager.
+        /// </summary>
+        public Coroutine RunCoroutine(IEnumerator coroutine)
+        {
+            return GameManager.StartCoroutine(coroutine);
+        }
+
+        /// <summary>
+        /// Stop GameManager coroutine.
+        /// </summary>
+        public void StopCoroutine(Coroutine coroutine)
+        {
+            GameManager.StopCoroutine(coroutine);
+        }
     }
 }

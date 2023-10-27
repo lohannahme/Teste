@@ -340,10 +340,15 @@ namespace UHFPS.Runtime
             if(interactObj.TryGetComponent(out InteractableItem interactable))
             {
                 bool isAddedToInventory = false;
+                int shortcutId = -1;
 
-                if(interactable.InteractableType == InteractableTypeEnum.InventoryItem)
+                if (interactable.InteractableType == InteractableTypeEnum.InventoryItem)
                 {
-                    isAddedToInventory = inventory.AddItem(interactable.PickupItem.GUID, interactable.Quantity, interactable.ItemCustomData);
+                    isAddedToInventory = inventory.AddItem(interactable.PickupItem.GUID, interactable.Quantity, interactable.ItemCustomData, out var addedItem);
+                    if (isAddedToInventory && interactable.AutoShortcut)
+                    {
+                        shortcutId = inventory.AutoShortcut(addedItem);
+                    }
                 }
 
                 if (interactable.InteractableType == InteractableTypeEnum.InventoryExpand)
@@ -357,6 +362,7 @@ namespace UHFPS.Runtime
                     if (interactable.MessageType == MessageTypeEnum.Alert)
                     {
                         string pickupText = ShowLootedText ? LootText + " " + interactable.ItemName : interactable.ItemName;
+                        if (shortcutId >= 0) pickupText += $"\nPress {shortcutId + 1} to Equip";
 
                         if (ShowDefaultPickupIcon)
                         {

@@ -10,13 +10,17 @@ namespace UHFPS.Editors
     [CustomEditor(typeof(InventoryAsset))]
     public class InventoryAssetEditor : Editor
     {
-        private static InventoryAsset asset;
+        private const int MAX_ITEMS = 15;
 
-        public static GUIStyle wordWrappedLabel
+        private static InventoryAsset asset;
+        private bool seeMore = false;
+
+        private GUIStyle centeredHelpBox
         {
-            get => new(EditorStyles.wordWrappedMiniLabel)
+            get => new(EditorStyles.helpBox)
             {
-                richText = true
+                alignment = TextAnchor.MiddleCenter,
+                fontStyle = FontStyle.Bold
             };
         }
 
@@ -48,26 +52,67 @@ namespace UHFPS.Editors
 
         public override void OnInspectorGUI()
         {
-            EditorDrawing.DrawInspectorHeader(new GUIContent("Inventory Database Asset"));
+            EditorDrawing.DrawInspectorHeader(new GUIContent("Inventory Database"));
             EditorGUILayout.Space();
 
             serializedObject.Update();
             {
-                EditorGUILayout.Space(10);
-                EditorGUILayout.HelpBox("Contains a database of inventory items.", MessageType.Info, true);
-                EditorGUILayout.Space(2);
-                EditorGUILayout.HelpBox("Assign this asset to an Inventory script to activate item selection with this asset.", MessageType.Warning, true);
-                EditorGUILayout.Space(10);
-
-                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-                string items = string.Join(",", asset.Items.Select(x => x.item.Title).Take(10));
-                EditorGUILayout.LabelField("<b>Items:</b> " + items, wordWrappedLabel);
-                EditorGUILayout.EndVertical();
-
-                if (GUILayout.Button("Open Inventory Builder", GUILayout.Height(30)))
+                if(asset.Items.Count > 0)
                 {
-                    OpenDatabaseEditor();
+                    string items, ellipsis;
+
+                    if (!seeMore)
+                    {
+                        int count = asset.Items.Count - MAX_ITEMS;
+                        ellipsis = asset.Items.Count > MAX_ITEMS ? $", (... {count})" : "";
+                        items = string.Join(", ", asset.Items.Select(x => x.item.Title).Take(MAX_ITEMS));
+                    }
+                    else
+                    {
+                        ellipsis = "";
+                        items = string.Join(", ", asset.Items.Select(x => x.item.Title));
+                    }
+
+                    using (new EditorDrawing.BorderBoxScope())
+                    {
+                        GUIContent title = EditorDrawing.IconTextContent("Stored Items", "Prefab On Icon", 14f);
+                        EditorGUILayout.LabelField(title, EditorStyles.miniBoldLabel);
+                        EditorDrawing.ResetIconSize();
+                        EditorGUILayout.Space(2f);
+
+                        EditorGUILayout.LabelField(items + ellipsis, EditorStyles.wordWrappedMiniLabel);
+
+                        if (asset.Items.Count > 15 && !seeMore)
+                        {
+                            if (GUILayout.Button("See More", EditorStyles.miniButton, GUILayout.Width(70f)))
+                            {
+                                seeMore = true;
+                            }
+                        }
+                    }
                 }
+                else
+                {
+                    Rect labelRect = EditorGUILayout.GetControlRect(GUILayout.Height(25f));
+                    GUI.Box(labelRect, "Inventory Database is Empty!", centeredHelpBox);
+                }
+
+                EditorGUILayout.Space(2f);
+                EditorDrawing.Separator();
+                EditorGUILayout.Space(2f);
+
+                EditorGUILayout.BeginHorizontal();
+                {
+                    GUILayout.FlexibleSpace();
+                    {
+                        if (GUILayout.Button("Open Inventory Builder", GUILayout.Width(180f), GUILayout.Height(25)))
+                        {
+                            OpenDatabaseEditor();
+                        }
+                    }
+                    GUILayout.FlexibleSpace();
+                }
+                EditorGUILayout.EndHorizontal();
             }
             serializedObject.ApplyModifiedProperties();
         }

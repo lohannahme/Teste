@@ -22,7 +22,8 @@ namespace UHFPS.Runtime
         public Transform CrateCenter;
 
         public bool SpawnRandomItem;
-        public bool ShowFLoatingIcon;
+        public bool ShowFloatingIcon;
+        public bool EnableItemsGravity;
         public MinMax PiecesKeepTime;
         public Vector3 BrokenRotation;
         public Vector3 SpawnedRotation;
@@ -56,13 +57,25 @@ namespace UHFPS.Runtime
                 if(randomItem != null)
                 {
                     GameObject item = SaveGameManager.InstantiateSaveable(randomItem, CrateCenter.position, SpawnedRotation);
-                    if(ShowFLoatingIcon) floatingIcon.AddFloatingIcon(item);
+                    if(ShowFloatingIcon) floatingIcon.AddFloatingIcon(item);
+                    if (EnableItemsGravity)
+                    {
+                        Rigidbody itemRigidbody = item.GetComponentInChildren<Rigidbody>();
+                        itemRigidbody.isKinematic = false;
+                        itemRigidbody.useGravity = true;
+                    }
                 }
             }
             else
             {
                 GameObject item = SaveGameManager.InstantiateSaveable(ItemInside, CrateCenter.position, SpawnedRotation);
-                if (ShowFLoatingIcon) floatingIcon.AddFloatingIcon(item);
+                if (ShowFloatingIcon) floatingIcon.AddFloatingIcon(item);
+                if (EnableItemsGravity)
+                {
+                    Rigidbody itemRigidbody = item.GetComponentInChildren<Rigidbody>();
+                    itemRigidbody.isKinematic = false;
+                    itemRigidbody.useGravity = true;
+                }
             }
 
             float maxDestroyTime = 0;

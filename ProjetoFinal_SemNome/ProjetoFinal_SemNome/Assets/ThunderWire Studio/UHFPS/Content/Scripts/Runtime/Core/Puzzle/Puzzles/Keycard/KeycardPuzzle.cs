@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using Newtonsoft.Json.Linq;
 using UHFPS.Tools;
+using System.Linq;
 
 namespace UHFPS.Runtime
 {
@@ -12,7 +13,9 @@ namespace UHFPS.Runtime
         public const string LEVEL_KEY = "level";
 
         public ItemProperty KeycardItem;
+        public ItemGuid[] UsableKeycards;
 
+        public bool SingleKeycard = false;
         public bool UseInteract = false;
         public bool RemoveKeycardAfterUse = false;
         public float AccessUpdateTime = 0.1f;
@@ -35,6 +38,7 @@ namespace UHFPS.Runtime
 
         public UnityEvent OnAccessGranted;
         public UnityEvent OnAccessDenied;
+        public UnityEvent OnWrongItem;
 
         public bool AccessGranted => accessGranted;
 
@@ -66,8 +70,16 @@ namespace UHFPS.Runtime
 
         public void OnInventoryItemSelect(Inventory inventory, InventoryItem selectedItem)
         {
-            if (selectedItem.ItemGuid != KeycardItem)
+            if (SingleKeycard)
+            {
+                if (selectedItem.ItemGuid != KeycardItem)
+                    return;
+            }
+            else if (!UsableKeycards.Any(x => x == selectedItem.ItemGuid))
+            {
+                OnWrongItem?.Invoke();
                 return;
+            }
 
             UseInventoryItem(selectedItem);
         }
@@ -141,7 +153,7 @@ namespace UHFPS.Runtime
             SetAccessState(state, true);
             notUsable = false;
 
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(1f);
             SetAccessState(false, false);
         }
 

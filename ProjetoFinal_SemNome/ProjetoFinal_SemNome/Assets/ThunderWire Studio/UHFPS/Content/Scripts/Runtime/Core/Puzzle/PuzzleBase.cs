@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UHFPS.Input;
 using Cinemachine;
+using UnityEngine.Events;
 
 namespace UHFPS.Runtime
 {
@@ -19,9 +20,12 @@ namespace UHFPS.Runtime
         public List<Collider> CollidersEnable = new List<Collider>();
         public List<Collider> CollidersDisable = new List<Collider>();
 
+        public UnityEvent<bool> OnScreenFade;
+
         protected PlayerPresenceManager playerPresence;
         protected PlayerManager playerManager;
         protected GameManager gameManager;
+        private bool canSwitch;
 
         /// <summary>
         /// Specifies when the camera is switched to a puzzle or normal camera. [true = puzzle, false = normal]
@@ -52,10 +56,8 @@ namespace UHFPS.Runtime
 
         public virtual void Update()
         {
-            if (InputManager.ReadButtonOnce(GetInstanceID(), Controls.EXAMINE) && isActive && canManuallySwitch)
-            {
+            if (InputManager.ReadButtonOnce(GetInstanceID(), Controls.EXAMINE) && canSwitch && isActive && canManuallySwitch)
                 SwitchBack();
-            }
         }
 
         /// <summary>
@@ -67,7 +69,7 @@ namespace UHFPS.Runtime
             {
                 playerPresence.FreezePlayer(true);
                 playerManager.PlayerItems.IsItemsUsable = false;
-                playerPresence.SwitchActiveCamera(PuzzleCamera.gameObject, SwitchCameraFadeSpeed, OnBackgroundFade);
+                playerPresence.SwitchActiveCamera(PuzzleCamera.gameObject, SwitchCameraFadeSpeed, OnBackgroundFade, () => { canSwitch = true; });
                 canManuallySwitch = true;
                 switchColliders = true;
                 isActive = true;
@@ -111,6 +113,8 @@ namespace UHFPS.Runtime
                     CollidersDisable.ForEach(x => x.enabled = true);
                 }
             }
+
+            OnScreenFade?.Invoke(isActive);
         }
 
         /// <summary>
@@ -122,6 +126,7 @@ namespace UHFPS.Runtime
             {
                 playerPresence.SwitchToPlayerCamera(SwitchCameraFadeSpeed, OnBackgroundFade);
                 if (EnablePointer) gameManager.HidePointer();
+                canSwitch = false;
                 isActive = false;
             }
         }

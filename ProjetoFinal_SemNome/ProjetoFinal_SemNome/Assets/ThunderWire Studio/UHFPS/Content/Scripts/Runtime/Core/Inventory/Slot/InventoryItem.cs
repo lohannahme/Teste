@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UHFPS.Input;
 using UHFPS.Tools;
+using ThunderWire.Attributes;
 
 namespace UHFPS.Runtime
 {
@@ -31,6 +32,10 @@ namespace UHFPS.Runtime
         public InventoryItemPanel verticalPanel;
         public InventoryItemPanel activePanel;
 
+        [Header("Debug")]
+        [ReadOnly] public Vector2Int currentSlot;
+        [ReadOnly] public Vector2Int lastSlot;
+
         public Inventory Inventory { get; set; }
         public string ContainerGuid { get; set; }
         public string ItemGuid { get; set; }
@@ -48,8 +53,6 @@ namespace UHFPS.Runtime
         private Color currentColor;
 
         private Orientation lastOrientation;
-        private Vector2Int currentSlot;
-        private Vector2Int lastSlot;
 
         private Vector2 dragOffset;
         private Vector2 dragVelocity;
@@ -60,7 +63,6 @@ namespace UHFPS.Runtime
         private float targetRotation;
         private float itemRotation;
         private float rotationVelocity;
-        private int containerColumns;
 
         private bool isCombining;
         private bool isCombinable;
@@ -82,12 +84,8 @@ namespace UHFPS.Runtime
 
         public void ContainerOpened(ushort columns)
         {
-            containerColumns = columns;
-            if (string.IsNullOrEmpty(ContainerGuid))
-            {
-                currentSlot.x += containerColumns;
-                lastSlot.x += containerColumns;
-            }
+            currentSlot.x += columns;
+            lastSlot.x += columns;
         }
 
         public void OnPointerEnter(PointerEventData eventData)
@@ -215,13 +213,6 @@ namespace UHFPS.Runtime
                 transform.eulerAngles = angles;
             }
 
-            if (containerColumns > -1 && string.IsNullOrEmpty(ContainerGuid))
-            {
-                currentSlot.x -= containerColumns;
-                lastSlot.x -= containerColumns;
-                containerColumns = -1;
-            }
-
             if (lastSlot != currentSlot)
             {
                 currentSlot = lastSlot;
@@ -236,31 +227,6 @@ namespace UHFPS.Runtime
             isMoving = false;
             isRotating = false;
         }
-
-        /// <summary>
-        /// Get top-left offset of the rectangle.
-        /// </summary>
-
-        /*
-        public Vector2 GetOrientationOffset()
-        {
-            if (rectTransform)
-            {
-                Rect rect = rectTransform.rect;
-
-                if (orientation == Orientation.Horizontal)
-                {
-                    return new Vector2(rect.xMax, rect.yMin);
-                }
-                else
-                {
-                    return new Vector2(rect.yMax, rect.xMin);
-                }
-            }
-
-            return Vector2.zero;
-        }
-        */
 
         /// <summary>
         /// Get item dimensions from current orientation.

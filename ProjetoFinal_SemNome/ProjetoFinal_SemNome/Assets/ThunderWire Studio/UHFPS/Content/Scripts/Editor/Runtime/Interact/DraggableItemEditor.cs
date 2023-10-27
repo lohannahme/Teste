@@ -59,6 +59,14 @@ namespace UHFPS.Editors
                         Properties.Draw("VolumeFadeOffSpeed");
                     }
                 }
+
+                EditorGUILayout.Space();
+                if(EditorDrawing.BeginFoldoutBorderLayout(Properties["OnDragStarted"], new GUIContent("Events")))
+                {
+                    Properties.Draw("OnDragStarted");
+                    Properties.Draw("OnDragEnded");
+                    EditorDrawing.EndBorderHeaderLayout();
+                }
             }
             serializedObject.ApplyModifiedProperties();
         }

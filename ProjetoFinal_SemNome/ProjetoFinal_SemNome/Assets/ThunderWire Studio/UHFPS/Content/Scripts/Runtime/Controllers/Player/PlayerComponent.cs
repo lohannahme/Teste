@@ -14,13 +14,35 @@ namespace UHFPS.Runtime
         }
 
         [NonSerialized]
+        private PlayerManager playerManager;
+        public PlayerManager PlayerManager
+        {
+            get
+            {
+                if (playerManager == null)
+                {
+                    Transform currentTransform = transform;
+                    while (currentTransform != null)
+                    {
+                        if (currentTransform.TryGetComponent(out playerManager)) 
+                            break;
+
+                        currentTransform = currentTransform.parent;
+                    }
+                }
+
+                return playerManager;
+            }
+        }
+
+        [NonSerialized]
         private CharacterController playerCollider;
         public CharacterController PlayerCollider
         {
             get
             {
                 if (playerCollider == null)
-                    playerCollider = transform.root.GetComponent<CharacterController>();
+                    playerCollider = PlayerManager.GetComponent<CharacterController>();
 
                 return playerCollider;
             }
@@ -33,7 +55,7 @@ namespace UHFPS.Runtime
             get
             {
                 if (playerStateMachine == null)
-                    playerStateMachine = transform.root.GetComponent<PlayerStateMachine>();
+                    playerStateMachine = PlayerManager.GetComponent<PlayerStateMachine>();
 
                 return playerStateMachine;
             }
@@ -46,7 +68,7 @@ namespace UHFPS.Runtime
             get
             {
                 if (lookController == null)
-                    lookController = transform.root.GetComponentInChildren<LookController>();
+                    lookController = PlayerManager.GetComponentInChildren<LookController>();
 
                 return lookController;
             }
@@ -59,22 +81,9 @@ namespace UHFPS.Runtime
             get
             {
                 if (examineController == null)
-                    examineController = transform.root.GetComponentInChildren<ExamineController>();
+                    examineController = PlayerManager.GetComponentInChildren<ExamineController>();
 
                 return examineController;
-            }
-        }
-
-        [NonSerialized]
-        private PlayerManager playerManager;
-        public PlayerManager PlayerManager
-        {
-            get
-            {
-                if (playerManager == null)
-                    playerManager = transform.root.GetComponent<PlayerManager>();
-
-                return playerManager;
             }
         }
 

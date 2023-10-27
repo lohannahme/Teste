@@ -107,11 +107,11 @@ namespace UHFPS.Runtime
 
         private void Start()
         {
-            if (!SaveGameManager.IsGameJustLoaded || !SaveGameManager.GameStateExist)
+            if (!SaveGameManager.GameWillLoad || !SaveGameManager.GameStateExist)
             {
                 Vector3 rotation = Player.transform.eulerAngles;
                 Player.transform.rotation = Quaternion.identity;
-                LookController.rotation.x = rotation.y;
+                LookController.LookRotation.x = rotation.y;
 
                 if(PlayerUnlockType == UnlockType.Automatically)
                     UnlockPlayer();
@@ -177,25 +177,43 @@ namespace UHFPS.Runtime
 
         public (Vector3 position, Vector2 rotation) GetPlayerTransform()
         {
-            return (Player.transform.position, LookController.rotation);
+            return (Player.transform.position, LookController.LookRotation);
         }
 
         public void SetPlayerTransform(Vector3 position, Vector2 rotation)
         {
             Player.transform.SetPositionAndRotation(position, Quaternion.identity);
-            LookController.rotation = rotation;
+            LookController.LookRotation = rotation;
+            Physics.SyncTransforms(); // sync position to character controller
+        }
+
+        public void SetPlayerPositionAndLook(Vector3 position, Vector2 eulerLook)
+        {
+            Player.transform.SetPositionAndRotation(position, Quaternion.identity);
+            LookController.ApplyEulerLook(eulerLook);
             Physics.SyncTransforms(); // sync position to character controller
         }
 
         public void SwitchActiveCamera(GameObject virtualCameraObj, float fadeSpeed, Action onBackgroundFade)
         {
-            StartCoroutine(SwitchCamera(virtualCameraObj, fadeSpeed, onBackgroundFade));
+            StartCoroutine(SwitchCamera(virtualCameraObj, fadeSpeed, onBackgroundFade, null));
+            IsCameraSwitched = true;
+        }
+
+        public void SwitchActiveCamera(GameObject virtualCameraObj, float fadeSpeed, Action onBackgroundFade, Action onFadeComplete)
+        {
+            StartCoroutine(SwitchCamera(virtualCameraObj, fadeSpeed, onBackgroundFade, onFadeComplete));
             IsCameraSwitched = true;
         }
 
         public void SwitchToPlayerCamera(float fadeSpeed, Action onBackgroundFade)
         {
-            StartCoroutine(SwitchCamera(null, fadeSpeed, onBackgroundFade));
+            StartCoroutine(SwitchCamera(null, fadeSpeed, onBackgroundFade, null));
+        }
+
+        public void SwitchToPlayerCamera(float fadeSpeed, Action onBackgroundFade, Action onFadeComplete)
+        {
+            StartCoroutine(SwitchCamera(null, fadeSpeed, onBackgroundFade, onFadeComplete));
         }
 
         public IEnumerator SwitchCamera(GameObject cameraObj, float fadeSpeed)
@@ -216,7 +234,7 @@ namespace UHFPS.Runtime
             IsCameraSwitched = cameraObj != null; // check if camera switched to player camera
         }
 
-        private IEnumerator SwitchCamera(GameObject cameraObj, float fadeSpeed, Action onBackgroundFade)
+        private IEnumerator SwitchCamera(GameObject cameraObj, float fadeSpeed, Action onBackgroundFade, Action onFadeComplete)
         {
             yield return gameManager.StartBackgroundFade(false, fadeSpeed: fadeSpeed);
             playerManager.MainVirtualCamera.gameObject.SetActive(cameraObj == null);
@@ -234,6 +252,9 @@ namespace UHFPS.Runtime
             yield return gameManager.StartBackgroundFade(true, fadeSpeed: fadeSpeed);
 
             IsCameraSwitched = cameraObj != null; // check if camera switched to player camera
+
+            yield return new WaitForSeconds(0.1f);
+            onFadeComplete?.Invoke();
         }
     }
 }

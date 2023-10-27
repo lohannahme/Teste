@@ -4,12 +4,15 @@ using UnityEngine;
 using UnityEditor;
 using UHFPS.Runtime;
 using ThunderWire.Editors;
+using UHFPS.Scriptable;
 
 namespace UHFPS.Editors
 {
     [CustomEditor(typeof(PlayerStateMachine))]
     public class PlayerStateMachineEditor : InspectorEditor<PlayerStateMachine>
     {
+        public static Texture2D FSMIcon => Resources.Load<Texture2D>("EditorIcons/fsm");
+
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
@@ -22,16 +25,31 @@ namespace UHFPS.Editors
                 Properties.Draw("ControllerOffset");
 
                 EditorGUILayout.Space();
-                EditorGUILayout.LabelField("Player Settings", EditorStyles.boldLabel);
-                EditorDrawing.DrawClassBorderFoldout(Properties["PlayerBasicSettings"], new GUIContent("Basic Settings"));
-                EditorDrawing.DrawClassBorderFoldout(Properties["PlayerFeatures"], new GUIContent("Player Features"));
-                EditorDrawing.DrawClassBorderFoldout(Properties["PlayerStamina"], new GUIContent("Player Stamina"));
-                EditorDrawing.DrawClassBorderFoldout(Properties["PlayerControllerSettings"], new GUIContent("Controller Settings"));
+                using (new EditorDrawing.BorderBoxScope())
+                {
+                    GUIContent title = EditorDrawing.IconTextContent("Player Settings", "CharacterController Icon", 14f);
+                    EditorGUILayout.LabelField(title, EditorStyles.miniBoldLabel);
+                    EditorDrawing.ResetIconSize();
+                    EditorGUILayout.Space(2f);
+
+                    EditorDrawing.DrawClassBorderFoldout(Properties["PlayerBasicSettings"], new GUIContent("Basic Settings"));
+                    EditorDrawing.DrawClassBorderFoldout(Properties["PlayerFeatures"], new GUIContent("Player Features"));
+                    EditorDrawing.DrawClassBorderFoldout(Properties["PlayerSliding"], new GUIContent("Player Sliding"));
+                    EditorDrawing.DrawClassBorderFoldout(Properties["PlayerStamina"], new GUIContent("Player Stamina"));
+                    EditorDrawing.DrawClassBorderFoldout(Properties["PlayerControllerSettings"], new GUIContent("Controller Settings"));
+                }
 
                 EditorGUILayout.Space();
-                EditorGUILayout.LabelField("Controller States", EditorStyles.boldLabel);
-                EditorDrawing.DrawClassBorderFoldout(Properties["StandingState"], new GUIContent("Standing State"));
-                EditorDrawing.DrawClassBorderFoldout(Properties["CrouchingState"], new GUIContent("Crouching State"));
+                using (new EditorDrawing.BorderBoxScope())
+                {
+                    GUIContent title = EditorDrawing.IconTextContent("Controller States", "CapsuleCollider Icon", 14f);
+                    EditorGUILayout.LabelField(title, EditorStyles.miniBoldLabel);
+                    EditorDrawing.ResetIconSize();
+                    EditorGUILayout.Space(2f);
+
+                    EditorDrawing.DrawClassBorderFoldout(Properties["StandingState"], new GUIContent("Standing State"));
+                    EditorDrawing.DrawClassBorderFoldout(Properties["CrouchingState"], new GUIContent("Crouching State"));
+                }
 
                 EditorGUILayout.Space();
                 EditorGUILayout.LabelField("Player States", EditorStyles.boldLabel);
@@ -39,7 +57,6 @@ namespace UHFPS.Editors
 
                 if (Target.StatesAsset != null)
                 {
-                    Vector2 iconSize = EditorGUIUtility.GetIconSize();
                     SerializedObject statesSerializedObject = Application.isPlaying && Target.StatesAssetRuntime != null
                         ? new SerializedObject(Target.StatesAssetRuntime)
                         : new SerializedObject(Target.StatesAsset);
@@ -51,14 +68,21 @@ namespace UHFPS.Editors
                     {
                         if (stateProperties.Count > 2)
                         {
-                            if(EditorDrawing.BeginFoldoutBorderLayout(stateProperties["PlayerStates"], new GUIContent("Global Variables" + (Application.isPlaying ? "*" : ""))))
+
+                            GUIContent stateHeader = EditorDrawing.IconTextContent("State Properties" + (Application.isPlaying ? "*" : ""), "Settings");
+
+                            EditorDrawing.SetLabelColor("#E0FBFC");
+                            if (EditorDrawing.BeginFoldoutBorderLayout(stateProperties["PlayerStates"], stateHeader))
                             {
+                                EditorDrawing.ResetLabelColor();
                                 foreach (var item in stateProperties.Skip(2))
                                 {
                                     EditorGUILayout.PropertyField(item.Value);
                                 }
                                 EditorDrawing.EndBorderHeaderLayout();
                             }
+                            EditorDrawing.ResetLabelColor();
+                            EditorDrawing.ResetIconSize();
                             EditorGUILayout.Space(EditorGUIUtility.standardVerticalSpacing);
                         }
 
@@ -68,10 +92,10 @@ namespace UHFPS.Editors
                             Type previousState = null;
                             if (Application.isPlaying)
                             {
-                                if (Target.CurrentState.HasValue)
+                                if (Target.CurrentState != null)
                                     currentState = Target.CurrentState?.stateData.stateAsset.GetType();
 
-                                if (Target.PreviousState.HasValue)
+                                if (Target.PreviousState != null)
                                     previousState = Target.PreviousState?.stateData.stateAsset.GetType();
                             }
 
@@ -84,11 +108,13 @@ namespace UHFPS.Editors
                                 bool expanded = state.isExpanded;
                                 bool toggle = isEnabled.boolValue;
 
-                                string name = stateAsset.objectReferenceValue.ToString();
-                                EditorGUIUtility.SetIconSize(new Vector2(14, 14));
-                                GUIContent title = EditorGUIUtility.TrTextContentWithIcon(" " + name, "NavMeshAgent Icon");
+                                string name = ((PlayerStateAsset)stateAsset.objectReferenceValue).Name.Split('/').Last();
+                                EditorDrawing.SetIconSize(12f);
+
+                                GUIContent title = EditorGUIUtility.TrTextContentWithIcon(" " + name, FSMIcon);
                                 Rect header = EditorDrawing.DrawScriptableBorderFoldoutToggle(stateAsset, title, ref expanded, ref toggle);
 
+                                EditorDrawing.ResetIconSize();
                                 state.isExpanded = expanded;
                                 isEnabled.boolValue = toggle;
 
@@ -117,7 +143,6 @@ namespace UHFPS.Editors
                     }
                     statesSerializedObject.ApplyModifiedProperties();
 
-                    EditorGUIUtility.SetIconSize(iconSize);
                     EditorGUILayout.Space(EditorGUIUtility.standardVerticalSpacing);
                     EditorGUILayout.HelpBox("To add new states open player state asset.", MessageType.Info);
                 }
@@ -130,8 +155,10 @@ namespace UHFPS.Editors
                 EditorDrawing.Separator();
                 EditorGUILayout.Space();
 
-                if(EditorDrawing.BeginFoldoutToggleBorderLayout(new GUIContent("Player Gizmos"), Properties["DrawPlayerGizmos"]))
+                GUIContent gizomsHeader = EditorDrawing.IconTextContent("Player Gizmos", "BodySilhouette", 12f);
+                if(EditorDrawing.BeginFoldoutToggleBorderLayout(gizomsHeader, Properties["DrawPlayerGizmos"]))
                 {
+                    EditorDrawing.ResetIconSize();
                     using (new EditorGUI.DisabledGroupScope(!Properties.BoolValue("DrawPlayerGizmos")))
                     {
                         Properties.Draw("GizmosColor");
@@ -140,6 +167,7 @@ namespace UHFPS.Editors
                     }
                     EditorDrawing.EndBorderHeaderLayout();
                 }
+                EditorDrawing.ResetIconSize();
             }
             serializedObject.ApplyModifiedProperties();
         }

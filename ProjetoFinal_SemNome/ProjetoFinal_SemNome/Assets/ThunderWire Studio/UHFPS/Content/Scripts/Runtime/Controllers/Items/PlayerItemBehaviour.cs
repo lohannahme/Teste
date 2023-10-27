@@ -12,6 +12,7 @@ namespace UHFPS.Runtime
         private PlayerStateMachine playerStateMachine;
         private LookController lookController;
         private ExamineController examineController;
+        private MotionController motionController;
         private Vector3 wallHitVel;
 
         private Transform motionTransform;
@@ -20,6 +21,7 @@ namespace UHFPS.Runtime
 
         public bool EnableWallDetection = true;
         public bool EnableMotionPreset = true;
+        public bool EnableExternalMotion = true;
 
         // wall detection
         public LayerMask WallHitMask;
@@ -33,6 +35,9 @@ namespace UHFPS.Runtime
         // item motion
         public MotionBlender MotionBlender = new();
         public MotionPreset MotionPreset;
+
+        // external motions
+        public ExternalMotions ExternalMotions = new();
 
         /// <summary>
         /// The pivot point of the item object that will be used for the motion preset effects.
@@ -68,7 +73,7 @@ namespace UHFPS.Runtime
             get
             {
                 if (playerManager == null)
-                    playerManager = transform.root.GetComponent<PlayerManager>();
+                    playerManager = GetComponentInParent<PlayerManager>();
 
                 return playerManager;
             }
@@ -82,7 +87,7 @@ namespace UHFPS.Runtime
             get
             {
                 if (playerStateMachine == null)
-                    playerStateMachine = transform.root.GetComponent<PlayerStateMachine>();
+                    playerStateMachine = PlayerManager.GetComponent<PlayerStateMachine>();
 
                 return playerStateMachine;
             }
@@ -96,7 +101,7 @@ namespace UHFPS.Runtime
             get
             {
                 if (lookController == null)
-                    lookController = transform.GetComponentInParent<LookController>();
+                    lookController = PlayerManager.GetComponentInChildren<LookController>();
 
                 return lookController;
             }
@@ -110,9 +115,23 @@ namespace UHFPS.Runtime
             get
             {
                 if (examineController == null)
-                    examineController = transform.GetComponentInParent<ExamineController>();
+                    examineController = PlayerManager.GetComponentInChildren<ExamineController>();
 
                 return examineController;
+            }
+        }
+
+        /// <summary>
+        /// MotionController component.
+        /// </summary>
+        public MotionController CameraMotions
+        {
+            get
+            {
+                if (motionController == null)
+                    motionController = PlayerManager.GetComponentInChildren<MotionController>();
+
+                return motionController;
             }
         }
 
@@ -149,18 +168,21 @@ namespace UHFPS.Runtime
         /// </summary>
         public virtual bool CanCombine() => false;
 
-        private void Start()
+        public virtual void Start()
         {
             if (EnableMotionPreset && MotionPreset != null)
             {
-                motionTransform = MotionPivot != null ? MotionPivot : PlayerManager.MotionController.HandsMotionTransform;
+                motionTransform = MotionPivot != null ? MotionPivot : CameraMotions.HandsMotionTransform;
                 defaultMotionRot = motionTransform.localRotation;
                 defaultMotionPos = motionTransform.localPosition;
                 MotionBlender.Init(MotionPreset, motionTransform, PlayerStateMachine);
             }
+
+            if (EnableExternalMotion) 
+                ExternalMotions.Init(CameraMotions);
         }
 
-        private void OnDestroy()
+        public virtual void OnDestroy()
         {
             if (EnableMotionPreset && MotionPreset != null && MotionBlender != null)
                 MotionBlender.Dispose();
@@ -191,6 +213,17 @@ namespace UHFPS.Runtime
             }
 
             OnUpdate();
+        }
+
+        /// <summary>
+        /// Apply an external camera motion effect, such as an wobble or impact.
+        /// </summary>
+        public void ApplyEffect(string eventID)
+        {
+            if (!EnableExternalMotion || ExternalMotions == null)
+                return;
+
+            ExternalMotions.ApplyEffect(eventID);
         }
 
         /// <summary>

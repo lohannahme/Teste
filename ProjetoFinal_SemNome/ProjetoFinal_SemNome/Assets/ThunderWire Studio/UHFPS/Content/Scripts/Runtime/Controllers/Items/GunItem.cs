@@ -1,11 +1,12 @@
 using System;
 using System.Collections;
+using System.Reactive.Disposables;
 using UnityEngine;
 using UHFPS.Input;
 using UHFPS.Tools;
 using UHFPS.Scriptable;
 using Newtonsoft.Json.Linq;
-using static UHFPS.Scriptable.SurfaceDetailsAsset;
+using static UHFPS.Scriptable.SurfaceDefinitionSet;
 
 namespace UHFPS.Runtime
 {
@@ -16,7 +17,6 @@ namespace UHFPS.Runtime
         [Serializable]
         public sealed class BaseSettings
         {
-            public Tag FleshTag;
             public int BaseDamage = 20;
             public float DropoffDistance = 500f;
             public float RangeModifier = 1f;
@@ -134,10 +134,12 @@ namespace UHFPS.Runtime
         }
 
         public string GunName = "Pistol";
-        public SurfaceDetailsAsset SurfaceDetails;
-        public SurfaceDetectionEnum SurfaceDetection;
         public WeaponTypeEnum WeaponType;
         public LayerMask RaycastMask;
+        
+        public SurfaceDefinitionSet SurfaceDefinitionSet;
+        public SurfaceDetection SurfaceDetection;
+        public Tag FleshTag;
 
         public ItemGuid GunInventoryItem;
         public ItemGuid AmmoInventoryItem;
@@ -159,7 +161,7 @@ namespace UHFPS.Runtime
 
         private GameManager gameManager;
         private Inventory inventory;
-        private IDisposable disposable;
+        private CompositeDisposable disposables = new();
 
         private AudioSource audioSource;
         private MeshRenderer muzzleRenderer;
@@ -205,21 +207,22 @@ namespace UHFPS.Runtime
             defaultAim = Vector3.zero;
             defaultFov = PlayerManager.MainVirtualCamera.m_Lens.FieldOfView;
             currentFov = defaultFov;
-
             currentRecoil = recoilSettings.BaseRecoil;
-            disposable = inventory.OnItemAdded.Subscribe(item =>
+
+            disposables.Add(inventory.OnInventoryChanged.Subscribe(item =>
             {
-                if (item.ItemGuid == AmmoInventoryItem)
+                if (item.guid == AmmoInventoryItem)
                 {
-                    carryingBullets = item.Quantity;
+                    carryingBullets = inventory.GetAllItemsQuantity(AmmoInventoryItem);
                     UpdateAmmoText();
                 }
-            });
+            }));
         }
 
-        private void OnDestroy()
+        public override void OnDestroy()
         {
-            disposable?.Dispose();
+            base.OnDestroy();
+            disposables.Dispose();
         }
 
         public override void OnUpdate()
@@ -373,7 +376,10 @@ namespace UHFPS.Runtime
             }
 
             bulletsInMag--;
-            UpdateInventoryAmmo(true, false);
+            ApplyEffect("Shoot");
+
+            inventory.SetItemQuantity(GunInventoryItem, (ushort)bulletsInMag, false);
+            UpdateAmmoText();
         }
 
         private void ShowBulletMark(RaycastHit hit, Vector3 dir)
@@ -386,7 +392,7 @@ namespace UHFPS.Runtime
                 float maxDistance = baseSettings.DropoffDistance;
                 int damage = Mathf.RoundToInt(baseDamage * Mathf.Pow(rangeModifier, hit.distance / maxDistance));
                 damagable.OnApplyDamage(damage, PlayerManager.transform);
-                isFlesh = damagable is IHealthEntity;
+                isFlesh = damagable is NPCBodyPart or IHealthEntity;
             }
 
             if (hit.rigidbody != null) hit.rigidbody.AddForceAtPosition(dir * baseSettings.Hitforce, hit.point);
@@ -395,25 +401,17 @@ namespace UHFPS.Runtime
             GameObject hitObject = hit.collider.gameObject;
             Vector3 hitPoint = hit.point;
 
-            SurfaceDetails? surfaceDetails = isFlesh
-                ? SurfaceDetails.GetSurfaceDetails(baseSettings.FleshTag)
-                : SurfaceDetails.GetSurfaceDetails(hitObject, hitPoint, SurfaceDetection);
+            SurfaceDefinition surfaceDefinition = isFlesh
+                ? SurfaceDefinitionSet.GetSurface(FleshTag)
+                : SurfaceDefinitionSet.GetSurface(hitObject, hitPoint, SurfaceDetection);
 
-            if (surfaceDetails.HasValue)
+            if (surfaceDefinition != null)
             {
-                var impactProperties = surfaceDetails.Value.ImpactProperties;
-
-                if (impactProperties.SurfaceBulletmarks.Length > 0)
+                if (surfaceDefinition.SurfaceBulletmarks.Length > 0)
                 {
-                    GameObject hitPrefab = impactProperties.SurfaceBulletmarks.Random();
+                    GameObject hitPrefab = surfaceDefinition.SurfaceBulletmarks.Random();
                     GameObject bulletmark = Instantiate(hitPrefab, hitPoint, hitRotation);
                     bulletmark.transform.SetParent(hit.transform);
-                }
-
-                if (impactProperties.BulletmarkImpacts.Length > 0)
-                {
-                    AudioClip hitSound = impactProperties.BulletmarkImpacts.Random();
-                    GameTools.PlayOneShot3D(hitPoint, hitSound);
                 }
             }
         }
@@ -449,17 +447,13 @@ namespace UHFPS.Runtime
 
             carryingBullets -= bulletsToFullMag;
             carryingBullets = (int)Mathf.Clamp(carryingBullets, 0, Mathf.Infinity);
-            UpdateInventoryAmmo(true, true);
+
+            inventory.SetItemQuantity(GunInventoryItem, (ushort)bulletsInMag, false);
+            inventory.RemoveItemQuantityMany(AmmoInventoryItem, (ushort)bulletsToFullMag);
+            UpdateAmmoText();
 
             isReloading = false;
             fireTime = 0;
-        }
-
-        private void UpdateInventoryAmmo(bool gun, bool ammo)
-        {
-            if (gun) inventory.SetItemQuantity(GunInventoryItem, (ushort)bulletsInMag, false);
-            if (ammo) inventory.SetItemQuantity(AmmoInventoryItem, (ushort)carryingBullets);
-            UpdateAmmoText();
         }
 
         private void UpdateAmmoText()
@@ -484,7 +478,8 @@ namespace UHFPS.Runtime
             CanvasGroupFader.StartFadeInstance(ammoPanel, true, 5f);
 
             bulletsInMag = inventory.GetItemQuantity(GunInventoryItem);
-            carryingBullets = inventory.GetItemQuantity(AmmoInventoryItem);
+            carryingBullets = inventory.GetAllItemsQuantity(AmmoInventoryItem);
+            UpdateAmmoText();
 
             ItemObject.SetActive(true);
             StartCoroutine(ShowGun());
@@ -494,7 +489,6 @@ namespace UHFPS.Runtime
         IEnumerator ShowGun()
         {
             yield return new WaitForAnimatorClip(Animator, animationSettings.GunDrawState);
-            UpdateAmmoText();
             isEquipped = true;
         }
 
@@ -535,7 +529,7 @@ namespace UHFPS.Runtime
             Animator.Play(animationSettings.GunIdleState);
 
             bulletsInMag = inventory.GetItemQuantity(GunInventoryItem);
-            carryingBullets = inventory.GetItemQuantity(AmmoInventoryItem);
+            carryingBullets = inventory.GetAllItemsQuantity(AmmoInventoryItem);
 
             isBusy = false;
             isEquipped = true;

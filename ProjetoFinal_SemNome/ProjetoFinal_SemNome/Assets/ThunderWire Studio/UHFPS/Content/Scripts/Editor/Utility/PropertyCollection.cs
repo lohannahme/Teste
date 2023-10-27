@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.Linq;
+using System;
 
 namespace ThunderWire.Editors
 {
@@ -51,10 +52,14 @@ namespace ThunderWire.Editors
             }
         }
 
-        public void Draw(string propertyName)
+        public void Draw(string propertyName, int indent = 0)
         {
             if (TryGetValue(propertyName, out SerializedProperty property))
+            {
+                if (indent > 0) EditorGUI.indentLevel += indent;
                 EditorGUILayout.PropertyField(property);
+                if (indent > 0) EditorGUI.indentLevel -= indent;
+            }
         }
 
         public void DrawBacking(string propertyName)
@@ -79,7 +84,8 @@ namespace ThunderWire.Editors
         {
             if (TryGetValue(propertyName, out SerializedProperty property))
             {
-                return property.boolValue = EditorGUILayout.ToggleLeft(property.displayName, property.boolValue);
+                GUIContent label = new(property.displayName, property.tooltip);
+                return property.boolValue = EditorGUILayout.ToggleLeft(label, property.boolValue);
             }
 
             return false;
@@ -89,6 +95,36 @@ namespace ThunderWire.Editors
         {
             foreach (var property in this.Skip(skip))
             {
+                bool shouldIndent = property.Value.propertyType == SerializedPropertyType.Generic;
+
+                if (indentDropdowns && shouldIndent) EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(property.Value);
+                if (indentDropdowns && shouldIndent) EditorGUI.indentLevel--;
+            }
+        }
+
+        public void DrawAllExcept(bool indentDropdowns = false, int skip = 0, params string[] except)
+        {
+            foreach (var property in this.Skip(skip))
+            {
+                if (except.Contains(property.Key))
+                    continue;
+
+                bool shouldIndent = property.Value.propertyType == SerializedPropertyType.Generic;
+
+                if (indentDropdowns && shouldIndent) EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(property.Value);
+                if (indentDropdowns && shouldIndent) EditorGUI.indentLevel--;
+            }
+        }
+
+        public void DrawAllPredicate(bool indentDropdowns, int skip, Predicate<string> predicate)
+        {
+            foreach (var property in this.Skip(skip))
+            {
+                if (!predicate(property.Key))
+                    continue;
+
                 bool shouldIndent = property.Value.propertyType == SerializedPropertyType.Generic;
 
                 if (indentDropdowns && shouldIndent) EditorGUI.indentLevel++;

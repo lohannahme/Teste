@@ -3,62 +3,55 @@ using UnityEngine;
 using UHFPS.Input;
 using UHFPS.Tools;
 using UHFPS.Scriptable;
-using static UHFPS.Scriptable.SurfaceDetailsAsset;
+using static UHFPS.Scriptable.SurfaceDefinitionSet;
 
 namespace UHFPS.Runtime
 {
+    [RequireComponent(typeof(AudioSource))]
     public class KnifeItem : PlayerItemBehaviour
     {
-        [System.Serializable]
-        public struct SlashType
-        {
-            public ushort AttackIndex;
-            public float AttackAngle;
-            public bool Visualize;
-        }
-
-        public SurfaceDetailsAsset SurfaceDetails;
-        public SurfaceDetectionEnum SurfaceDetection;
+        public SurfaceDefinitionSet SurfaceDefinitionSet;
+        public SurfaceDetection SurfaceDetection;
+        public Tag FleshTag;
 
         public LayerMask RaycastMask;
-        public float AttackDistance;
+        public MinMax AttackAngle;
+        public MinMax AttackRange;
+        public uint RaycastCount = 10;
+        public float RaycastDelay;
+        public bool ShowAttackGizmos;
+
         public MinMaxInt AttackDamage;
-        public float AttackWait;
+        public float NextAttackDelay;
+        [Range(0f, 1f)]
+        public float AttackTimeOffset = 0f;
 
-        public string KnifeDrawState = "KnifeDraw";
-        public string KnifeHideState = "KnifeHide";
-        public string KnifeIdleState = "KnifeIdle";
+        public string DrawState = "KnifeDraw";
+        public string HideState = "KnifeHide";
+        public string IdleState = "KnifeIdle";
 
+        public string SlashRState = "KnifeSlash_R";
+        public string SlashLState = "KnifeSlash_L";
+
+        public string AttackBool = "Attack";
+        public string SlashTrigger = "Slash";
         public string HideTrigger = "Hide";
-        public string AttackTrigger = "Attack";
-        public string AttackTypeTrigger = "AttackType";
 
-        public SlashType[] SlashTypes;
-        public ushort StabIndex = 2;
-
-        public GameObject FleshImpact;
-
-        public SoundClip SlashWhoosh;
-        public SoundClip StabWhoosh;
-
-        public AudioClip[] FleshSlash;
-        public AudioClip[] FleshStab;
-
-        [Range(0f, 1f)] public float DefaultSlashVolume = 1f;
-        [Range(0f, 1f)] public float DefaultStabVolume = 1f;
-
-        [Range(0f, 1f)] public float FleshSlashVolume = 1f;
-        [Range(0f, 1f)] public float FleshStabVolume = 1f;
+        public SoundClip KnifeDraw;
+        public SoundClip KnifeHide;
+        public SoundClip KnifeSlash;
 
         private AudioSource audioSource;
-        private bool isEquipped;
-        private bool isBusy;
-        private bool isStab;
+        private Coroutine attack;
 
         private float attackTime;
-        private float attackAngle;
+        private bool isAttack;
+        private bool isAttackEnd;
 
-        public override string Name => "Knife";
+        private bool isEquipped;
+        private bool isBusy;
+
+        public override string Name => "Pocket Knife";
 
         public override bool IsBusy() => !isEquipped || isBusy;
 
@@ -69,62 +62,149 @@ namespace UHFPS.Runtime
 
         public override void OnUpdate()
         {
-            if (isEquipped && CanInteract)
+            if (!isEquipped || isBusy)
+                return;
+
+            if (isAttack && isAttackEnd && attackTime <= 0)
             {
-                if (attackTime > 0f) 
-                    attackTime -= Time.deltaTime;
+                Animator.SetTrigger(SlashTrigger);
+                isAttackEnd = false;
+            }
+            else if (attackTime > 0f)
+            {
+                attackTime -= Time.deltaTime;
+            }
 
-                if (InputManager.ReadButton(Controls.FIRE) && attackTime <= 0f)
+            if (!CanInteract)
+                return;
+
+            if (InputManager.ReadButton(Controls.FIRE))
+            {
+                if (!isAttack && attackTime <= 0)
                 {
-                    int attackType = Random.Range(0, SlashTypes.Length);
-                    SlashType slashType = SlashTypes[attackType];
-                    attackType = slashType.AttackIndex;
-                    attackAngle = slashType.AttackAngle;
-
-                    audioSource.PlayOneShotSoundClip(SlashWhoosh);
-
-                    Animator.SetInteger(AttackTypeTrigger, attackType);
-                    Animator.SetTrigger(AttackTrigger);
-                    attackTime = AttackWait;
-                    isStab = false;
-                }
-                else if (InputManager.ReadButton(Controls.ADS) && attackTime <= 0f)
-                {
-                    audioSource.PlayOneShotSoundClip(StabWhoosh);
-
-                    Animator.SetInteger(AttackTypeTrigger, StabIndex);
-                    Animator.SetTrigger(AttackTrigger);
-                    attackTime = AttackWait;
-                    attackAngle = 0f;
-                    isStab = true;
+                    Animator.SetBool(AttackBool, true);
+                    isAttackEnd = false;
+                    isAttack = true;
                 }
             }
+            else
+            {
+                Animator.SetBool(AttackBool, false);
+                isAttack = false;
+            }
+        }
+
+        /// <summary>
+        /// Called from the animation event.
+        /// </summary>
+        public void Slash(bool isLeftSlash)
+        {
+            attackTime = NextAttackDelay;
+            audioSource.PlayOneShotSoundClip(KnifeSlash);
+            Animator.ResetTrigger(SlashTrigger);
+
+            if (attack != null) StopCoroutine(attack);
+            attack = StartCoroutine(OnAttack(isLeftSlash));
+            ApplyEffect(isLeftSlash ? "SlashL" : "SlashR");
+        }
+
+        IEnumerator OnAttack(bool isLeftSlash)
+        {
+            float step = (AttackAngle.RealMax - AttackAngle.RealMin) / (RaycastCount - 1);
+            float mid = (AttackAngle.RealMin + AttackAngle.RealMax) / 2f;
+
+            for (int i = 0; i < RaycastCount; i++)
+            {
+                float angle = isLeftSlash 
+                    ? AttackAngle.RealMin + (step * i)
+                    : AttackAngle.RealMax - (step * i);
+
+                float dir = GameTools.InverseLerp3(AttackAngle.RealMin, mid, AttackAngle.RealMax, angle);
+                float distance = Mathf.Lerp(AttackRange.RealMin, AttackRange.RealMax, dir);
+
+                Vector3 upward = PlayerItems.transform.up;
+                Vector3 forward = PlayerItems.transform.forward;
+                Vector3 direction = Quaternion.AngleAxis(angle, upward) * forward;
+                Ray ray = new(PlayerItems.transform.position, direction);
+
+                if (Physics.Raycast(ray, out RaycastHit hit, distance, RaycastMask))
+                {
+                    GameObject hitObject = hit.collider.gameObject;
+                    Vector3 hitPoint = hit.point;
+
+                    bool isFlesh = false;
+                    if (hit.collider.TryGetComponent(out IDamagable damagable))
+                    {
+                        int damage = AttackDamage.Random();
+                        damagable.OnApplyDamage(damage, PlayerManager.transform);
+                        isFlesh = damagable is NPCBodyPart or IHealthEntity;
+                    }
+
+                    SurfaceDefinition surfaceDefinition = isFlesh
+                        ? SurfaceDefinitionSet.GetSurface(FleshTag)
+                        : SurfaceDefinitionSet.GetSurface(hitObject, hitPoint, SurfaceDetection);
+
+                    if (surfaceDefinition != null)
+                    {
+                        if (surfaceDefinition.SurfaceMeleemarks.Length > 0)
+                        {
+                            Quaternion hitRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+                            GameObject hitPrefab = surfaceDefinition.SurfaceMeleemarks.Random();
+                            GameObject bulletmark = Instantiate(hitPrefab, hitPoint, hitRotation);
+                            bulletmark.transform.SetParent(hit.transform);
+                        }
+
+                        if (surfaceDefinition.SurfaceMeleeImpact.Count > 0)
+                        {
+                            AudioClip audio = surfaceDefinition.SurfaceMeleeImpact.ToArray().Random();
+                            AudioSource.PlayClipAtPoint(audio, hitPoint, surfaceDefinition.MeleeImpactVolume);
+                        }
+                    }
+
+                    ApplyEffect("Hit");
+                    break;
+                }
+
+                if (ShowAttackGizmos) Debug.DrawRay(ray.origin, ray.direction * distance, Color.red, 1f);
+                yield return new WaitForSeconds(RaycastDelay);
+            }
+
+            yield return new WaitForAnimatorStateEnd(Animator, isLeftSlash ? SlashLState : SlashRState, AttackTimeOffset);
+            isAttackEnd = true;
         }
 
         public override void OnItemSelect()
         {
             ItemObject.SetActive(true);
-            StartCoroutine(ShowKnife());
-            isEquipped = false;
+            StartCoroutine(OnShow());
+            audioSource.PlayOneShotSoundClip(KnifeDraw);
         }
 
-        IEnumerator ShowKnife()
+        IEnumerator OnShow()
         {
-            yield return new WaitForAnimatorClip(Animator, KnifeDrawState);
+            yield return new WaitForAnimatorClip(Animator, DrawState);
             isEquipped = true;
         }
 
         public override void OnItemDeselect()
         {
             StopAllCoroutines();
-            StartCoroutine(HideKnife());
+            StartCoroutine(OnHide());
+            audioSource.PlayOneShotSoundClip(KnifeHide);
+
             Animator.SetTrigger(HideTrigger);
+            Animator.ResetTrigger(SlashTrigger);
+            Animator.SetBool(AttackBool, false);
+
+            attackTime = 0f;
+            isAttackEnd = false;
+            isAttack = false;
             isBusy = true;
         }
 
-        IEnumerator HideKnife()
+        IEnumerator OnHide()
         {
-            yield return new WaitForAnimatorClip(Animator, KnifeHideState);
+            yield return new WaitForAnimatorClip(Animator, HideState);
             ItemObject.SetActive(false);
             isEquipped = false;
             isBusy = false;
@@ -134,102 +214,17 @@ namespace UHFPS.Runtime
         {
             StopAllCoroutines();
             ItemObject.SetActive(true);
-            Animator.Play(KnifeIdleState);
-            isBusy = false;
+            Animator.Play(IdleState);
             isEquipped = true;
+            isBusy = false;
         }
 
         public override void OnItemDeactivate()
         {
             StopAllCoroutines();
             ItemObject.SetActive(false);
-            isBusy = false;
             isEquipped = false;
-        }
-
-        public void OnAttack()
-        {
-            Ray ray = new Ray(PlayerItems.transform.position, PlayerItems.transform.forward);
-            if(Physics.Raycast(ray, out RaycastHit hit, AttackDistance, RaycastMask))
-            {
-                if(hit.collider.TryGetComponent(out IDamagable damagable))
-                {
-                    int damage = AttackDamage.Random();
-                    damagable.OnApplyDamage(damage, PlayerManager.transform);
-                }
-
-                if (damagable is IHealthEntity)
-                {
-                    if(FleshImpact != null) Instantiate(FleshImpact, hit.point, Quaternion.identity);
-                    AudioClip impactSound = isStab ? FleshStab.Random() : FleshSlash.Random();
-                    float impactVolume = isStab ? FleshStabVolume : FleshSlashVolume;
-
-                    if(impactSound != null)
-                        AudioSource.PlayClipAtPoint(impactSound, hit.point, impactVolume);
-                }
-                else
-                {
-                    var surfaceDetails = SurfaceDetails.GetTagSurfaceDetails(hit.collider.gameObject);
-                    if (surfaceDetails.HasValue)
-                    {
-                        GameObject hitmarkPrefab;
-                        AudioClip hitmarkSound;
-                        float hitmarkVolume;
-
-                        if (isStab)
-                        {
-                            var stabDetails = surfaceDetails.Value.ImpactProperties.StabImpactType;
-                            hitmarkPrefab = stabDetails.ImpactMarks.Random();
-                            hitmarkSound = stabDetails.ImpactSounds.Random();
-                            hitmarkVolume = DefaultStabVolume;
-                        }
-                        else
-                        {
-                            var slashDetails = surfaceDetails.Value.ImpactProperties.SlashImpactType;
-                            hitmarkPrefab = slashDetails.ImpactMarks.Random();
-                            hitmarkSound = slashDetails.ImpactSounds.Random();
-                            hitmarkVolume = DefaultSlashVolume;
-                        }
-
-                        if (hitmarkPrefab != null)
-                        {
-                            Quaternion rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
-                            GameObject hitmark = Instantiate(hitmarkPrefab, hit.point, rotation, hit.collider.transform);
-
-                            Vector3 camPos = PlayerManager.MainCamera.transform.position;
-                            Vector3 relative = hitmark.transform.InverseTransformPoint(camPos);
-                            int angle = Mathf.RoundToInt(Mathf.Atan2(relative.x, relative.z) * Mathf.Rad2Deg);
-                            hitmark.transform.RotateAround(hit.point, hit.normal, angle);
-
-                            if (hitmarkSound != null)
-                                AudioSource.PlayClipAtPoint(hitmarkSound, hit.point, hitmarkVolume);
-                        }
-                    }
-                }
-            }
-        }
-
-        public override void OnDrawGizmosSelected()
-        {
-            base.OnDrawGizmosSelected();
-
-            Vector3 forward = PlayerItems.transform.forward;
-            Vector3 origin = PlayerItems.transform.position + forward;
-            Vector3 previewDir = Quaternion.Euler(0f, 90f, 0f) * forward;
-
-            float length = 0.5f;
-            previewDir = previewDir.normalized * length;
-
-            Gizmos.color = Color.green;
-            foreach (var slashType in SlashTypes)
-            {
-                if (slashType.Visualize)
-                {
-                    Vector3 slashDir = Quaternion.Euler(0f, 0f, slashType.AttackAngle) * previewDir;
-                    origin -= slashDir / 2f;
-                    Gizmos.DrawRay(origin, slashDir);
-                }
-            }
+            isBusy = false;
         }
     }
 }

@@ -20,8 +20,11 @@ namespace UHFPS.Runtime
 
         public List<StorageItem> StoredItems = new();
 
+        [Tooltip("Interact with the container after holding the use button for a certain amount of time.")]
         public bool TimedOpen;
+        [Tooltip("Instantly interact with the container after searching the container once.")]
         public bool KeepSearched;
+        [Tooltip("Automatically arrange the stored items in the container.")]
         public bool AutoCoords;
 
         [field: SerializeField]
@@ -43,7 +46,7 @@ namespace UHFPS.Runtime
         {
             ContainerTitle.SubscribeGloc();
 
-            if (!SaveGameManager.IsGameJustLoaded)
+            if (!SaveGameManager.GameWillLoad)
             {
                 foreach (var storedItem in StoredItems)
                 {

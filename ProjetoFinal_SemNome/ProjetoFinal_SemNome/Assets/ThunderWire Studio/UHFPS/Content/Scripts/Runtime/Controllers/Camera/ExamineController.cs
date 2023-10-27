@@ -29,6 +29,8 @@ namespace UHFPS.Runtime
         public LayerMask FocusCullLayes;
         public Layer FocusLayer;
         public uint FocusRenderingLayer;
+
+        public Light ExamineLight;
         public GameObject HotspotPrefab;
 
         public ControlsContext ControlPutBack;
@@ -77,6 +79,9 @@ namespace UHFPS.Runtime
         private bool isReadingPaper;
         private bool isHotspotPressed;
 
+        private float defaultLightIntensity;
+        private Color defaultLightColor;
+
         private Vector2 examineRotate;
         private Vector2 rotateVelocity;
 
@@ -84,6 +89,9 @@ namespace UHFPS.Runtime
         {
             gameManager = GameManager.Instance;
             interactController = GetComponent<InteractController>();
+
+            defaultLightIntensity = ExamineLight.intensity;
+            defaultLightColor = ExamineLight.color;
         }
 
         private void Start()
@@ -115,6 +123,28 @@ namespace UHFPS.Runtime
             }
 
             if (IsExamining) ExamineHold();
+        }
+
+        public void SetExamineLight(float intensity)
+        {
+            ExamineLight.intensity = intensity;
+        }
+
+        public void SetExamineLight(Color color)
+        {
+            ExamineLight.color = color;
+        }
+
+        public void SetExamineLight(float intensity, Color color)
+        {
+            ExamineLight.intensity = intensity;
+            ExamineLight.color = color;
+        }
+
+        public void ResetExamineLight()
+        {
+            ExamineLight.intensity = defaultLightIntensity;
+            ExamineLight.color = defaultLightColor;
         }
 
         public void ExamineFromInventory(GameObject obj)
@@ -167,35 +197,61 @@ namespace UHFPS.Runtime
             if (interactableItem == null) return;
             currentExamine?.GameObject.SetLayerRecursively(interactController.InteractLayer);
 
-            Vector3 controlOffset = Quaternion.LookRotation(MainCamera.transform.forward) * interactableItem.ControlPoint;
+            Vector3 controlPoint = interactableItem.UseControlPoint ? interactableItem.ControlPoint : Vector3.zero;
+            Vector3 controlOffset = Quaternion.LookRotation(MainCamera.transform.forward) * controlPoint;
             Vector3 holdPosition = MainCamera.transform.position + MainCamera.transform.forward * interactableItem.ExamineDistance;
 
-            examinedObjects.Push(currentExamine = new ExaminedObject()
-            {
-                InteractableItem = interactableItem,
-                PutSettings = new ExaminePutter.PutSettings(interactableItem.transform, controlOffset, new ExaminePutter.PutCurve(PutPositionCurve)
+            // transform settings
+            var transformSettings = new ExaminePutter.TransformSettings(
+                interactableItem.transform.position,
+                interactableItem.transform.rotation,
+                controlOffset
+            );
+
+            // curve settings
+            var curveSettings = new ExaminePutter.CurveSettings
+            (
+                new ExaminePutter.PutCurve(PutPositionCurve)
                 {
-                    evalMultiply = PutPositionCurveMultiplier,
-                    curveTime = PutPositionCurveTime
+                    EvalMultiply = PutPositionCurveMultiplier,
+                    CurveTime = PutPositionCurveTime
                 },
                 new ExaminePutter.PutCurve(PutRotationCurve)
                 {
-                    evalMultiply = PutRotationCurveMultiplier,
-                    curveTime = PutRotationCurveTime,
-                }, 
-                examinedObjects.Count > 0),
+                    EvalMultiply = PutRotationCurveMultiplier,
+                    CurveTime = PutRotationCurveTime
+                }
+             );
+
+            // rigidbody settings
+            ExaminePutter.RigidbodySettings rigidbodySettings = null;
+            if (interactableItem.TryGetComponent(out Rigidbody rigidbody))
+            {
+                rigidbodySettings = new(rigidbody);
+                rigidbody.isKinematic = true;
+                rigidbody.useGravity = false;
+            }
+
+            // put settings
+            var putSettings = new ExaminePutter.PutSettings(
+                interactableItem.transform,
+                transformSettings,
+                curveSettings,
+                rigidbodySettings,
+                examinedObjects.Count > 0
+            );
+
+            // push data to stack
+            examinedObjects.Push(currentExamine = new ExaminedObject()
+            {
+                InteractableItem = interactableItem,
+                PutSettings = putSettings,
                 HoldPosition = holdPosition,
                 StartPosition = interactableItem.transform.position,
                 StartRotation = interactableItem.transform.rotation,
                 ControlPoint = interactableItem.transform.position + controlOffset,
                 ExamineDistance = interactableItem.ExamineDistance
             });
-
-            if (interactableItem.TryGetComponent(out Rigidbody rigidbody))
-            {
-                rigidbody.isKinematic = true;
-                rigidbody.useGravity = false;
-            }
 
             foreach (Collider collider in interactableItem.GetComponentsInChildren<Collider>())
             {
@@ -246,11 +302,16 @@ namespace UHFPS.Runtime
 
         IEnumerator ExamineItemAndShowInfo(InteractableItem item)
         {
-            bool isExamined = item.IsExamined;
-            if (!isExamined)
+            if (!item.IsExamined)
             {
                 yield return new WaitForSeconds(TimeToExamine);
                 item.IsExamined = true;
+
+                SoundClip examineHintSound = ExamineHintSound;
+                if (item.ExamineHintSound != null)
+                    examineHintSound = item.ExamineHintSound;
+
+                GameTools.PlayOneShot2D(transform.position, examineHintSound, "ExamineInfo");
             }
 
             string title = item.ExamineTitle;
@@ -258,15 +319,6 @@ namespace UHFPS.Runtime
             {
                 Item inventoryItem = item.PickupItem.GetItem();
                 title = inventoryItem.Title;
-            }
-
-            if (!isExamined)
-            {
-                SoundClip examineHintSound = ExamineHintSound;
-                if (item.ExamineHintSound != null)
-                    examineHintSound = item.ExamineHintSound;
-
-                GameTools.PlayOneShot2D(transform.position, examineHintSound, "ExamineInfo");
             }
 
             gameManager.ShowExamineInfo(true, false, title);
@@ -415,7 +467,7 @@ namespace UHFPS.Runtime
 
                     float alpha = examineHotspot.color.a;
                     {
-                        if (!Physics.Raycast(mainCamera, direction, direction.magnitude, FocusCullLayes, QueryTriggerInteraction.Ignore) && currentItem.ExamineHotspot.Enabled)
+                        if (!Physics.Raycast(mainCamera, direction, out RaycastHit hit, direction.magnitude, FocusCullLayes, QueryTriggerInteraction.Ignore) && currentItem.ExamineHotspot.Enabled)
                         {
                             alpha = Mathf.MoveTowards(alpha, 1f, Time.deltaTime * 10f);
                             isHotspotShown = true;
@@ -502,9 +554,10 @@ namespace UHFPS.Runtime
                     examineHotspot = null;
                 }
 
+                Vector3 position = examine.PutSettings.TransformData.Position;
+                Quaternion rotation = examine.PutSettings.TransformData.Rotation;
+                examine.GameObject.transform.SetPositionAndRotation(position, rotation);
                 examine.GameObject.SetActive(false);
-                examine.GameObject.transform.position = examine.PutSettings.putPosition;
-                examine.GameObject.transform.rotation = examine.PutSettings.putRotation;
             }
 
             isInventoryExamine = false;

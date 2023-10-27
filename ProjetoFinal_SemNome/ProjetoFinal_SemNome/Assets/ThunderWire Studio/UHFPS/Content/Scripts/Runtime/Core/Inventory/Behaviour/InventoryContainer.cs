@@ -61,7 +61,7 @@ namespace UHFPS.Runtime
             }
         }
 
-        public virtual void Move(InventoryItem inventoryItem, Inventory.FreeSpace freeSpace)
+        public virtual void Move(InventoryItem inventoryItem, FreeSpace freeSpace)
         {
             if (ContainerItems.TryGetValue(inventoryItem.ContainerGuid, out ContainerItem item))
             {

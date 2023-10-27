@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UHFPS.Tools;
 using UHFPS.Scriptable;
 
 namespace UHFPS.Runtime
@@ -13,9 +12,11 @@ namespace UHFPS.Runtime
         public float Weight = 1f;
 
         [NonSerialized] protected MotionPreset preset;
-        [NonSerialized] protected PlayerComponent component;
-        [NonSerialized] protected Transform transform;
         [NonSerialized] protected string state;
+
+        [NonSerialized] protected PlayerComponent component;
+        [NonSerialized] protected MotionBlender motionBlender;
+        [NonSerialized] protected Transform transform;
 
         [NonSerialized] protected CharacterController controller;
         [NonSerialized] protected PlayerStateMachine player;
@@ -41,14 +42,17 @@ namespace UHFPS.Runtime
         public virtual void Initialize(MotionSettings motionSettings)
         {
             preset = motionSettings.preset;
-            component = motionSettings.component;
-            transform = motionSettings.motionTransform;
             state = motionSettings.motionState;
+
+            component = motionSettings.component;
+            motionBlender = motionSettings.motionBlender;
+            transform = motionSettings.motionTransform;
 
             controller = component.PlayerCollider;
             player = component.PlayerStateMachine;
             look = component.LookController;
-            player.ObservableState.Subscribe(OnStateChange).HandleDisposable();
+
+            motionBlender.Disposables.Add(player.ObservableState.Subscribe(OnStateChange));
         }
 
         public abstract string Name { get; }

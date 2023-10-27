@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UHFPS.Runtime;
@@ -7,7 +8,7 @@ namespace UHFPS.Scriptable
     [CreateAssetMenu(fileName = "Inventory", menuName = "UHFPS/Game/Inventory Asset")]
     public class InventoryAsset : ScriptableObject
     {
-        [System.Serializable]
+        [Serializable]
         public struct ReferencedItem
         {
             public string guid;

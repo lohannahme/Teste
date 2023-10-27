@@ -38,5 +38,7 @@ namespace UHFPS.Runtime
         }
 
         public MinMax Flip() => new MinMax(max, min);
+
+        public override string ToString() => $"({RealMin}, {RealMax})";
     }
 }

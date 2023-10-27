@@ -14,12 +14,18 @@ namespace UHFPS.Runtime
         public ObjectiveSelect objectiveToAdd;
         public ObjectiveSelect objectiveToComplete;
 
-        private ObjectiveManager objectiveManager;
         private bool isTriggered;
 
-        private void Awake()
+        private ObjectiveManager objectiveManager;
+        private ObjectiveManager ObjectiveManager
         {
-            objectiveManager = ObjectiveManager.Instance;
+            get
+            {
+                if(objectiveManager == null)
+                    objectiveManager = ObjectiveManager.Instance;
+
+                return objectiveManager;
+            }
         }
 
         public void InteractStart()
@@ -47,16 +53,16 @@ namespace UHFPS.Runtime
         {
             if (objectiveType == ObjectiveType.New)
             {
-                objectiveManager.AddObjective(objectiveToAdd.ObjectiveKey, objectiveToAdd.SubObjectives);
+                ObjectiveManager.AddObjective(objectiveToAdd.ObjectiveKey, objectiveToAdd.SubObjectives);
             }
             else if (objectiveType == ObjectiveType.Complete)
             {
-                objectiveManager.CompleteObjective(objectiveToComplete.ObjectiveKey, objectiveToComplete.SubObjectives);
+                ObjectiveManager.CompleteObjective(objectiveToComplete.ObjectiveKey, objectiveToComplete.SubObjectives);
             }
             else if(objectiveType == ObjectiveType.NewAndComplete)
             {
-                objectiveManager.AddObjective(objectiveToAdd.ObjectiveKey, objectiveToAdd.SubObjectives);
-                objectiveManager.CompleteObjective(objectiveToComplete.ObjectiveKey, objectiveToComplete.SubObjectives);
+                ObjectiveManager.AddObjective(objectiveToAdd.ObjectiveKey, objectiveToAdd.SubObjectives);
+                ObjectiveManager.CompleteObjective(objectiveToComplete.ObjectiveKey, objectiveToComplete.SubObjectives);
             }
         }
 

@@ -72,10 +72,10 @@ namespace UHFPS.Runtime
         /// <summary>
         /// Check if the game will be loaded (<see cref="GameLoadType"/> is not set to Normal).
         /// </summary>
-        public static bool IsGameJustLoaded => HasReference && GameLoadType != LoadType.Normal;
+        public static bool GameWillLoad => HasReference && GameLoadType != LoadType.Normal;
 
         /// <summary>
-        /// Check if the game state of the level actually exists. Use with <see cref="IsGameJustLoaded"/> to check if the game state will be actually loaded.
+        /// Check if the game state of the level actually exists. Use with <see cref="GameWillLoad"/> to check if the game state will be actually loaded.
         /// </summary>
         public static bool GameStateExist => GameState != null;
 
@@ -168,7 +168,6 @@ namespace UHFPS.Runtime
                 {
                     // load game state and clear load type
                     LoadGameState(GameState);
-                    StartCoroutine(ClearLoad());
 
                     // show debug log
                     if (Debugging) Debug.Log("[SaveGameManager] The game state has been loaded.");
@@ -197,7 +196,6 @@ namespace UHFPS.Runtime
                 }
 
                 OnGameLoaded?.Invoke(false);
-                StartCoroutine(ClearLoad());
             }
 
             // get current scene name
@@ -205,6 +203,9 @@ namespace UHFPS.Runtime
 
             // start time played timer at start
             timerActive = true;
+
+            // reset load state
+            StartCoroutine(ClearLoad());
         }
 
         private void Update()
@@ -310,8 +311,8 @@ namespace UHFPS.Runtime
         /// <summary>
         /// Save game state with custom player position and rotation. 
         /// <br>The world state and player data will be saved.</br>
-        /// <br>Usability: If you need to have a different player position and rotation when returning to the previous scene.</br>
         /// </summary>
+        /// <remarks>If you need to have a different player position and rotation when returning to the previous scene.</remarks>
         /// <param name="onSaved">Event when the game is successfully saved.</param>
         public static void SaveGame(Vector3 position, Vector2 rotation, Action onSaved)
         {

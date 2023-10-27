@@ -49,10 +49,6 @@ namespace UHFPS.Runtime
         public ushort SlotsToExpand = 1;
         public bool ExpandRows;
 
-        public float ExamineDistance = 0.4f;
-        public MinMax ExamineZoomLimits = new(0.3f, 0.4f);
-
-        public bool UseExamineZooming = true;
         public bool UseInventoryTitle = true;
         public bool ExamineInventoryTitle = true;
         public bool ShowExamineTitle = true;
@@ -61,6 +57,11 @@ namespace UHFPS.Runtime
         public bool TakeFromExamine = false;
         public bool AllowCursorExamine = false;
         public bool IsPaper = false;
+        public bool AutoShortcut = false;
+
+        public bool UseExamineZooming = true;
+        public MinMax ExamineZoomLimits = new(0.3f, 0.4f);
+        public float ExamineDistance = 0.4f;
 
         public bool UseFaceRotation;
         public Vector3 FaceRotation;
@@ -153,7 +154,6 @@ namespace UHFPS.Runtime
             if (InteractableType == InteractableTypeEnum.ExamineItem)
                 return;
 
-            Debug.Log("Interact");
             PlayerPresenceManager.Instance.PlayerManager.InteractController.Interact(gameObject);
         }
 

@@ -15,16 +15,9 @@ namespace UHFPS.Runtime
         }
 
         [Serializable]
-        public sealed class PowerFlowDirection
-        {
-            public PartDirection FlowDirection = PartDirection.Up;
-            public bool IsPowerFlow = false;
-        }
-
-        [Serializable]
         public sealed class PowerFlow
         {
-            public PowerFlowDirection[] FlowDirections;
+            public PartDirection[] FlowDirections;
             public RendererMaterial[] FlowRenderer;
             public List<int> PowerFlows = new();
         }
@@ -49,19 +42,16 @@ namespace UHFPS.Runtime
             {
                 var direction = FlowDirections[i];
                 var flow = PowerFlows[i] = new PowerFlow();
-                flow.FlowDirections = new PowerFlowDirection[direction.FlowDirections.Count];
+                flow.FlowDirections = new PartDirection[direction.FlowDirections.Count];
                 flow.FlowRenderer = direction.FlowRenderer;
 
                 for (int j = 0; j < direction.FlowDirections.Count; j++)
                 {
-                    flow.FlowDirections[j] = new PowerFlowDirection
-                    {
-                        FlowDirection = direction.FlowDirections[j]
-                    };
+                    flow.FlowDirections[j] = direction.FlowDirections[j];
                 }
             }
 
-            if(!SaveGameManager.IsGameJustLoaded)
+            if(!SaveGameManager.GameWillLoad)
                 InitializeDirections();
         }
 
@@ -85,16 +75,17 @@ namespace UHFPS.Runtime
 
         public void SetComponentAngle()
         {
-            transform.localRotation = Quaternion.AngleAxis(Angle, transform.Direction(ComponentUp));
+            Vector3 newRotation = transform.localEulerAngles.SetComponent(ComponentUp, Angle);
+            transform.localEulerAngles = newRotation;
         }
 
         public void RotateDirections(int times)
         {
             foreach (var flow in PowerFlows)
             {
-                foreach (var flowDirection in flow.FlowDirections)
+                for (int i = 0; i < flow.FlowDirections.Length; i++)
                 {
-                    flowDirection.FlowDirection = RotatePartDirection(flowDirection.FlowDirection, times);
+                    flow.FlowDirections[i] = RotatePartDirection(flow.FlowDirections[i], times);
                 }
             }
         }
@@ -105,7 +96,7 @@ namespace UHFPS.Runtime
             PowerFlow inputFlow = GetOppositePowerFlow(fromDirection);
             if (inputFlow == null) return;
 
-            if(visited == null) 
+            if(visited == null)
                 visited = new List<PowerFlow>();
 
             if (visited.Contains(inputFlow)) return;
@@ -113,13 +104,13 @@ namespace UHFPS.Runtime
 
             foreach (var direction in inputFlow.FlowDirections)
             {
-                if (!ElectricalCircuitPuzzle.IsOppositeDirection(fromDirection, direction.FlowDirection))
+                if (!ElectricalCircuitPuzzle.IsOppositeDirection(fromDirection, direction))
                 {
-                    if (GetDirectionComponent(direction.FlowDirection, out var component))
+                    if (GetDirectionComponent(direction, out var component))
                     {
-                        if (component.GetOppositePowerFlow(direction.FlowDirection) != null)
+                        if (component.GetOppositePowerFlow(direction) != null)
                         {
-                            component.SetPowerFlow(direction.FlowDirection, powerID, visited);
+                            component.SetPowerFlow(direction, powerID, visited);
                         }
                     }
                 }
@@ -144,6 +135,7 @@ namespace UHFPS.Runtime
         {
             Vector2Int dirOutput = ElectricalCircuitPuzzle.DirectionToVector(direction);
             Vector2Int newCoords = Coords + dirOutput;
+
             if (ElectricalCircuit.IsCoordsValid(newCoords))
             {
                 int compIndex = ElectricalCircuit.CoordsToIndex(newCoords);
@@ -161,7 +153,7 @@ namespace UHFPS.Runtime
             {
                 foreach (var direction in flow.FlowDirections)
                 {
-                    if (ElectricalCircuitPuzzle.IsOppositeDirection(direction.FlowDirection, oppositeDir))
+                    if (ElectricalCircuitPuzzle.IsOppositeDirection(direction, oppositeDir))
                         return flow;
                 }
             }
@@ -171,7 +163,9 @@ namespace UHFPS.Runtime
 
         private PartDirection RotatePartDirection(PartDirection direction, int times)
         {
-            if (times <= 0) return direction;
+            if (times <= 0) 
+                return direction;
+
             return RotatePartDirection(direction switch
             {
                 PartDirection.Up => PartDirection.Right,

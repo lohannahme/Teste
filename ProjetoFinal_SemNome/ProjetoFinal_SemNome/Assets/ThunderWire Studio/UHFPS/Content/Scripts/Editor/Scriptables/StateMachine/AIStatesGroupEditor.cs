@@ -15,6 +15,8 @@ namespace UHFPS.Editors
         AIStatesGroup Target;
         IEnumerable<Type> AvailableStates;
 
+        public static Texture2D FSMIcon => Resources.Load<Texture2D>("EditorIcons/fsm");
+
         private void OnEnable()
         {
             Properties = EditorDrawing.GetAllProperties(serializedObject);
@@ -33,7 +35,8 @@ namespace UHFPS.Editors
             {
                 if (Properties.Count > 2)
                 {
-                    if (EditorDrawing.BeginFoldoutBorderLayout(Properties["AIStates"], new GUIContent("Global Variables")))
+                    GUIContent stateHeader = EditorDrawing.IconTextContent("State Properties", "Settings");
+                    if (EditorDrawing.BeginFoldoutBorderLayout(Properties["AIStates"], stateHeader))
                     {
                         foreach (var item in Properties.Skip(2))
                         {
@@ -41,6 +44,7 @@ namespace UHFPS.Editors
                         }
                         EditorDrawing.EndBorderHeaderLayout();
                     }
+                    EditorDrawing.ResetIconSize();
                     EditorGUILayout.Space();
                 }
 
@@ -50,8 +54,6 @@ namespace UHFPS.Editors
 
                 if (Properties["AIStates"].arraySize > 0)
                 {
-                    Vector2 iconSize = EditorGUIUtility.GetIconSize();
-
                     for (int i = 0; i < Properties["AIStates"].arraySize; i++)
                     {
                         SerializedProperty state = Properties["AIStates"].GetArrayElementAtIndex(i);
@@ -62,8 +64,9 @@ namespace UHFPS.Editors
                         bool toggle = isEnabled.boolValue;
 
                         string name = stateAsset.objectReferenceValue.ToString();
-                        EditorGUIUtility.SetIconSize(new Vector2(14, 14));
-                        GUIContent title = EditorGUIUtility.TrTextContentWithIcon(" " + name, "NavMeshAgent Icon");
+                        EditorDrawing.SetIconSize(12f);
+
+                        GUIContent title = EditorGUIUtility.TrTextContentWithIcon(" " + name, FSMIcon);
                         Rect headerRect = EditorDrawing.DrawScriptableBorderFoldoutToggle(stateAsset, title, ref expanded, ref toggle);
                         state.isExpanded = expanded;
                         isEnabled.boolValue = toggle;
@@ -73,7 +76,7 @@ namespace UHFPS.Editors
                         dropdownRect.x -= EditorGUIUtility.standardVerticalSpacing;
                         dropdownRect.y += headerRect.height / 2 - 8f;
 
-                        EditorGUIUtility.SetIconSize(iconSize);
+                        EditorDrawing.ResetIconSize();
                         GUIContent dropdownIcon = EditorGUIUtility.TrIconContent("_Menu", "State Menu");
                         int index = i;
 

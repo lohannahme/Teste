@@ -12,6 +12,9 @@ namespace UHFPS.Runtime
 
         public void OnApplyDamage(int damage, Transform sender = null)
         {
+            if (HealthScript == null)
+                return;
+
             if (HealthScript.AllowHeadhsot && IsHeadDamage)
                 damage = Mathf.RoundToInt(damage * HealthScript.HeadshotMultiplier);
 
@@ -20,6 +23,9 @@ namespace UHFPS.Runtime
 
         public void ApplyDamageMax(Transform sender = null)
         {
+            if (HealthScript == null)
+                return;
+
             HealthScript.ApplyDamageMax(sender);
         }
     }

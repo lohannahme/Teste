@@ -100,7 +100,7 @@ namespace UHFPS.Runtime
             defaultLightRange = CameraLight.range;
             currentZoom = defaultZoom;
 
-            if (!SaveGameManager.IsGameJustLoaded)
+            if (!SaveGameManager.GameWillLoad)
             {
                 isNVEnabled = InitialNVState;
                 SetNVState(isNVEnabled, true);
@@ -317,8 +317,6 @@ namespace UHFPS.Runtime
 
         IEnumerator ShowCamera()
         {
-            Animator.SetTrigger(CameraShow);
-
             yield return new WaitForAnimatorClip(Animator, CameraShow, CameraShowFadeOffset);
             yield return gameManager.StartBackgroundFade(false);
 

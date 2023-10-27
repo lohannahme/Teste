@@ -37,7 +37,7 @@ namespace UHFPS.Scriptable
             return false;
         }
 
-        public void Initialize(PlayerComponent component, Transform motionTransform)
+        public void Initialize(MotionBlender motionBlender, PlayerComponent component, Transform motionTransform)
         {
             foreach (var state in StateMotions)
             {
@@ -47,6 +47,7 @@ namespace UHFPS.Scriptable
                     {
                         preset = this,
                         component = component,
+                        motionBlender = motionBlender,
                         motionTransform = motionTransform,
                         motionState = state.StateID
                     });

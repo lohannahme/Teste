@@ -29,7 +29,8 @@ namespace UHFPS.Runtime
 
                 if (info.fullPathHash == stateHash && !isStateEntered)
                 {
-                    stateWaitTime = info.length - timeOffset;
+                    float stateLength = info.length / info.speed;
+                    stateWaitTime = stateLength - timeOffset;
                     isStateEntered = true;
                 }
                 else if (isStateEntered)

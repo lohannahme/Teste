@@ -23,6 +23,7 @@ namespace UHFPS.Runtime
         public float ObjectWeight = 20f;
         public float PlayerRadius = 0.3f;
         public float PlayerHeight = 1.8f;
+        public float PlayerFeetOffset = 0f;
 
         public float WalkMultiplier = 1f;
         public float LookMultiplier = 1f;
@@ -94,7 +95,7 @@ namespace UHFPS.Runtime
             Vector3 bottomPos = new(position.x, Renderer.bounds.min.y, position.z);
 
             Vector3 playerBottom = bottomPos;
-            playerBottom.y += PlayerRadius;
+            playerBottom.y += PlayerFeetOffset;
 
             Vector3 p1 = new Vector3(position.x, playerBottom.y, position.z);
             Vector3 p2 = new Vector3(position.x, playerBottom.y + height, position.z);
@@ -119,10 +120,10 @@ namespace UHFPS.Runtime
 
             float height = PlayerHeight - 0.6f;
             Vector3 playerBottom = bottomPos;
-            playerBottom.y += PlayerRadius;
+            playerBottom.y += PlayerFeetOffset;
 
-            Vector3 p1 = new Vector3(position.x, playerBottom.y, position.z);
-            Vector3 p2 = new Vector3(position.x, playerBottom.y + height, position.z);
+            Vector3 p1 = new(position.x, playerBottom.y, position.z);
+            Vector3 p2 = new(position.x, playerBottom.y + height, position.z);
 
             Gizmos.color = Color.green;
             GizmosE.DrawWireCapsule(p1, p2, PlayerRadius);

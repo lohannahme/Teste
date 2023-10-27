@@ -14,6 +14,7 @@ namespace UHFPS.Runtime
         protected PlayerItemsManager playerItems;
         protected MotionController motionController;
         protected LookController cameraLook;
+        protected FootstepsSystem footstepsSystem;
         protected PlayerStateMachine.ControllerState controllerState;
 
         private Vector3 heightVelocity;
@@ -56,6 +57,11 @@ namespace UHFPS.Runtime
         }
 
         /// <summary>
+        /// The keyboard input movement value.
+        /// </summary>
+        protected Vector2 MovementInput => machine.Input;
+
+        /// <summary>
         /// Check if you can transition to this state when the transition is disabled.
         /// </summary>
         public virtual bool CanTransitionWhenDisabled => false;
@@ -89,6 +95,7 @@ namespace UHFPS.Runtime
             cameraHolder = machine.PlayerManager.CameraHolder;
             motionController = machine.PlayerManager.MotionController;
             cameraLook = machine.LookController;
+            footstepsSystem = machine.GetComponent<FootstepsSystem>();
             Transitions = OnGetTransitions();
         }
 
@@ -108,7 +115,7 @@ namespace UHFPS.Runtime
             if (controllerState != null)
             {
                 Vector3 cameraPosition = machine.SetControllerState(controllerState);
-                float changeSpeed = machine.PlayerControllerSettings.StateChangeSpeed;
+                float changeSpeed = machine.PlayerControllerSettings.StateChangeSmooth;
 
                 Vector3 localPos = machine.PlayerManager.CameraHolder.localPosition;
                 localPos = Vector3.SmoothDamp(localPos, cameraPosition, ref heightVelocity, changeSpeed);
@@ -133,6 +140,26 @@ namespace UHFPS.Runtime
         {
             float gravityForce = GravityForce();
             motion += gravityForce * Time.deltaTime * Vector3.up;
+        }
+
+        /// <summary>
+        /// Check if the surface is a sliding surface.
+        /// </summary>
+        public bool SlopeCast(out Vector3 normal, out float angle)
+        {
+            LayerMask slidingMask = machine.PlayerSliding.SlidingMask;
+            float slideRayLength = machine.PlayerSliding.SlideRayLength;
+
+            if (Physics.SphereCast(CenterPosition, controller.radius, Vector3.down, out RaycastHit hit, slideRayLength, slidingMask))
+            {
+                normal = hit.normal;
+                angle = Vector3.Angle(hit.normal, Vector3.up);
+                return true;
+            }
+
+            normal = Vector3.zero;
+            angle = 0f;
+            return false;
         }
 
         /// <summary>

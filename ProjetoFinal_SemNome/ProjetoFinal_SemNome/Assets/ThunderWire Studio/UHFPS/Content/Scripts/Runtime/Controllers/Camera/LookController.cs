@@ -3,33 +3,27 @@ using System.Collections;
 using UnityEngine;
 using UHFPS.Input;
 using UHFPS.Tools;
-using ThunderWire.Attributes;
 
 namespace UHFPS.Runtime
 {
-    [InspectorHeader("Look Controller")]
     public class LookController : PlayerComponent
     {
-        public bool lockCursor;
+        public bool LockCursor;
+        public bool SmoothLook;
 
-        [Header("Smoothing")]
-        public bool smoothLook;
-        public float smoothTime = 5f;
-        public float smoothMultiplier = 2f;
+        public float SensitivityX = 2f;
+        public float SensitivityY = 2f;
+        public float MultiplierX = 1f;
+        public float MultiplierY = 1f;
 
-        [Header("Sensitivity")]
-        public float sensitivityX = 2f;
-        public float sensitivityY = 2f;
+        public float SmoothTime = 5f;
+        public float SmoothMultiplier = 2f;
 
-        [Header("Look Limits")]
-        public MinMax horizontalLimits = new(-360, 360);
-        public MinMax verticalLimits = new(-80, 90);
+        public MinMax HorizontalLimits = new(-360, 360);
+        public MinMax VerticalLimits = new(-80, 90);
 
-        [Header("Offset")]
-        public Vector2 offset;
-
-        [Header("Debug"), ReadOnly]
-        public Vector2 rotation;
+        public Vector2 LookOffset;
+        public Vector2 LookRotation;
 
         private bool blockLook;
         private MinMax horizontalLimitsOrig;
@@ -52,18 +46,18 @@ namespace UHFPS.Runtime
 
         void Start()
         {
-            verticalLimitsOrig = verticalLimits;
-            horizontalLimitsOrig = horizontalLimits;
-            if (lockCursor) GameTools.ShowCursor(true, false);
+            verticalLimitsOrig = VerticalLimits;
+            horizontalLimitsOrig = HorizontalLimits;
+            if (LockCursor) GameTools.ShowCursor(true, false);
 
             OptionsManager.ObserveOption("sensitivity", (obj) =>
             {
-                sensitivityX = (float)obj;
-                sensitivityY = (float)obj;
+                SensitivityX = (float)obj;
+                SensitivityY = (float)obj;
             });
 
-            OptionsManager.ObserveOption("smoothing", (obj) => smoothLook = (bool)obj);
-            OptionsManager.ObserveOption("smoothing_speed", (obj) => smoothTime = (float)obj);
+            OptionsManager.ObserveOption("smoothing", (obj) => SmoothLook = (bool)obj);
+            OptionsManager.ObserveOption("smoothing_speed", (obj) => SmoothTime = (float)obj);
         }
 
         void Update()
@@ -77,20 +71,20 @@ namespace UHFPS.Runtime
                 DeltaInput = Vector2.zero;
             }
 
-            rotation.x += DeltaInput.x * sensitivityX / 30 * MainCamera.fieldOfView + offset.x;
-            rotation.y += DeltaInput.y * sensitivityY / 30 * MainCamera.fieldOfView + offset.y;
+            LookRotation.x += DeltaInput.x * (SensitivityX * MultiplierX) / 30 * MainCamera.fieldOfView + LookOffset.x;
+            LookRotation.y += DeltaInput.y * (SensitivityY * MultiplierY) / 30 * MainCamera.fieldOfView + LookOffset.y;
 
-            rotation.x = ClampAngle(rotation.x, horizontalLimits.RealMin, horizontalLimits.RealMax);
-            rotation.y = ClampAngle(rotation.y, verticalLimits.RealMin, verticalLimits.RealMax);
+            LookRotation.x = ClampAngle(LookRotation.x, HorizontalLimits.RealMin, HorizontalLimits.RealMax);
+            LookRotation.y = ClampAngle(LookRotation.y, VerticalLimits.RealMin, VerticalLimits.RealMax);
 
-            RotationX = Quaternion.AngleAxis(rotation.x, Vector3.up);
-            RotationY = Quaternion.AngleAxis(rotation.y, Vector3.left);
+            RotationX = Quaternion.AngleAxis(LookRotation.x, Vector3.up);
+            RotationY = Quaternion.AngleAxis(LookRotation.y, Vector3.left);
             RotationFinal = RotationX * RotationY;
 
-            transform.localRotation = smoothLook ? Quaternion.Slerp(transform.localRotation, RotationFinal, smoothTime * smoothMultiplier * Time.deltaTime) : RotationFinal;
+            transform.localRotation = SmoothLook ? Quaternion.Slerp(transform.localRotation, RotationFinal, SmoothTime * SmoothMultiplier * Time.deltaTime) : RotationFinal;
 
-            offset.y = 0F;
-            offset.x = 0F;
+            LookOffset.y = 0F;
+            LookOffset.x = 0F;
         }
 
         /// <summary>
@@ -101,8 +95,8 @@ namespace UHFPS.Runtime
             target.x = ClampAngle(target.x);
             target.y = ClampAngle(target.y);
 
-            float xDiff = FixDiff(target.x - rotation.x);
-            float yDiff = FixDiff(target.y - rotation.y);
+            float xDiff = FixDiff(target.x - LookRotation.x);
+            float yDiff = FixDiff(target.y - LookRotation.y);
 
             StartCoroutine(DoLerpRotation(new Vector2(xDiff, yDiff), null, duration));
         }
@@ -115,8 +109,8 @@ namespace UHFPS.Runtime
             target.x = ClampAngle(target.x);
             target.y = ClampAngle(target.y);
 
-            float xDiff = FixDiff(target.x - rotation.x);
-            float yDiff = FixDiff(target.y - rotation.y);
+            float xDiff = FixDiff(target.x - LookRotation.x);
+            float yDiff = FixDiff(target.y - LookRotation.y);
 
             StartCoroutine(DoLerpRotation(new Vector2(xDiff, yDiff), onLerpComplete, duration));
         }
@@ -137,8 +131,8 @@ namespace UHFPS.Runtime
             targetRotation.y = ClampAngle(-targetRotation.y);
 
             // Calculate the differences in each axis.
-            float xDiff = FixDiff(targetRotation.x - rotation.x);
-            float yDiff = FixDiff(targetRotation.y - rotation.y);
+            float xDiff = FixDiff(targetRotation.x - LookRotation.x);
+            float yDiff = FixDiff(targetRotation.y - LookRotation.y);
 
             // Start the lerp process.
             StartCoroutine(DoLerpRotation(new Vector2(xDiff, yDiff), null, duration, keepLookLocked));
@@ -160,8 +154,8 @@ namespace UHFPS.Runtime
             targetRotation.y = ClampAngle(targetRotation.y);
 
             // Calculate the differences in each axis.
-            float xDiff = FixDiff(targetRotation.x - rotation.x);
-            float yDiff = FixDiff(targetRotation.y - rotation.y);
+            float xDiff = FixDiff(targetRotation.x - LookRotation.x);
+            float yDiff = FixDiff(targetRotation.y - LookRotation.y);
 
             // Start the lerp process.
             StartCoroutine(DoLerpRotation(new Vector2(xDiff, yDiff), onLerpComplete, duration, keepLookLocked));
@@ -176,9 +170,9 @@ namespace UHFPS.Runtime
         public void LerpClampRotation(Vector3 relative, MinMax vLimits, MinMax hLimits, float duration = 0.5f)
         {
             float toAngle = ClampAngle(relative.y);
-            float remainder = FixDiff(toAngle - rotation.x);
+            float remainder = FixDiff(toAngle - LookRotation.x);
 
-            float targetAngle = rotation.x + remainder;
+            float targetAngle = LookRotation.x + remainder;
             float min = targetAngle - Mathf.Abs(hLimits.RealMin);
             float max = targetAngle + Mathf.Abs(hLimits.RealMax);
 
@@ -186,17 +180,13 @@ namespace UHFPS.Runtime
             {
                 min += 360;
                 max += 360;
+                targetAngle += 360;
             }
             else if (max > 360)
             {
                 min -= 360;
                 max -= 360;
-            }
-
-            if (Mathf.Abs(targetAngle - rotation.x) > 180)
-            {
-                if (rotation.x > 0) rotation.x -= 360;
-                else if (rotation.x < 0) rotation.x += 360;
+                targetAngle -= 360;
             }
 
             hLimits = new MinMax(min, max);
@@ -212,28 +202,16 @@ namespace UHFPS.Runtime
             {
                 targetLook.x = ClampAngle(target.x);
                 targetLook.y = ClampAngle(target.y);
-                startingLook = rotation;
+                startingLook = LookRotation;
                 customLerp = true;
                 blockLook = true;
             }
 
             if ((t = Mathf.Clamp01(t)) < 1)
             {
-                rotation.x = Mathf.LerpAngle(startingLook.x, targetLook.x, t);
-                rotation.y = Mathf.LerpAngle(startingLook.y, targetLook.y, t);
+                LookRotation.x = Mathf.LerpAngle(startingLook.x, targetLook.x, t);
+                LookRotation.y = Mathf.LerpAngle(startingLook.y, targetLook.y, t);
             }
-        }
-
-        /// <summary>
-        /// Get remainder to relative rotation.
-        /// </summary>
-        /// <param name="relative">Relative target rotation.</param>
-        /// <returns></returns>
-        public float GetLookRemainder(Vector3 relative)
-        {
-            float toAngle = ClampAngle(relative.y);
-            float remainder = FixDiff(toAngle - rotation.x);
-            return rotation.x + remainder;
         }
 
         /// <summary>
@@ -259,9 +237,9 @@ namespace UHFPS.Runtime
             if (hLimits.HasValue)
             {
                 float toAngle = ClampAngle(relative.y);
-                float remainder = FixDiff(toAngle - rotation.x);
+                float remainder = FixDiff(toAngle - LookRotation.x);
 
-                float targetAngle = rotation.x + remainder;
+                float targetAngle = LookRotation.x + remainder;
                 float min = targetAngle - Mathf.Abs(hLimits.RealMin);
                 float max = targetAngle + Mathf.Abs(hLimits.RealMax);
 
@@ -276,17 +254,17 @@ namespace UHFPS.Runtime
                     max -= 360;
                 }
 
-                if (Mathf.Abs(targetAngle - rotation.x) > 180)
+                if (Mathf.Abs(targetAngle - LookRotation.x) > 180)
                 {
-                    if (rotation.x > 0) rotation.x -= 360;
-                    else if (rotation.x < 0) rotation.x += 360;
+                    if (LookRotation.x > 0) LookRotation.x -= 360;
+                    else if (LookRotation.x < 0) LookRotation.x += 360;
                 }
 
                 hLimits = new MinMax(min, max);
-                horizontalLimits = hLimits;
+                HorizontalLimits = hLimits;
             }
 
-            verticalLimits = vLimits;
+            VerticalLimits = vLimits;
         }
 
         /// <summary>
@@ -295,7 +273,7 @@ namespace UHFPS.Runtime
         /// <param name="vLimits">Vertical Limits [Up, Down]</param>
         public void SetVerticalLimits(MinMax vLimits)
         {
-            verticalLimits = vLimits;
+            VerticalLimits = vLimits;
         }
 
         /// <summary>
@@ -306,9 +284,9 @@ namespace UHFPS.Runtime
         public void SetHorizontalLimits(Vector3 relative, MinMax hLimits)
         {
             float toAngle = ClampAngle(relative.y);
-            float remainder = FixDiff(toAngle - rotation.x);
+            float remainder = FixDiff(toAngle - LookRotation.x);
 
-            float targetAngle = rotation.x + remainder;
+            float targetAngle = LookRotation.x + remainder;
             float min = targetAngle - Mathf.Abs(hLimits.RealMin);
             float max = targetAngle + Mathf.Abs(hLimits.RealMax);
 
@@ -323,14 +301,14 @@ namespace UHFPS.Runtime
                 max -= 360;
             }
 
-            if (Mathf.Abs(targetAngle - rotation.x) > 180)
+            if (Mathf.Abs(targetAngle - LookRotation.x) > 180)
             {
-                if (rotation.x > 0) rotation.x -= 360;
-                else if (rotation.x < 0) rotation.x += 360;
+                if (LookRotation.x > 0) LookRotation.x -= 360;
+                else if (LookRotation.x < 0) LookRotation.x += 360;
             }
 
             hLimits = new MinMax(min, max);
-            horizontalLimits = hLimits;
+            HorizontalLimits = hLimits;
         }
 
         /// <summary>
@@ -339,41 +317,47 @@ namespace UHFPS.Runtime
         public void ResetLookLimits()
         {
             StopAllCoroutines();
-            horizontalLimits = horizontalLimitsOrig;
-            verticalLimits = verticalLimitsOrig;
+            HorizontalLimits = horizontalLimitsOrig;
+            VerticalLimits = verticalLimitsOrig;
         }
 
         /// <summary>
-        /// Get the current rotation from the transform and apply its rotation to the controller.
+        /// Apply look rotation using a euler angles vector.
         /// </summary>
-        /// <remarks>Good to use from the timeline to set the look rotation from animation uisng the SignalEmitter.</remarks>
-        public void ApplyLookFromTransform()
+        /// <remarks>Good to use when you want to set the look rotation from a custom camera.</remarks>
+        public void ApplyEulerLook(Vector2 eulerAngles)
         {
-            Vector3 eulerAngles = transform.localEulerAngles;
-            rotation.x = ClampAngle(eulerAngles.y);
-            rotation.y = ClampAngle(eulerAngles.x);
+            // Clamp the target rotation angles.
+            eulerAngles.x = ClampAngle(eulerAngles.x);
+            eulerAngles.y = ClampAngle(eulerAngles.y);
+
+            // Calculate the differences in each axis.
+            float xDiff = FixDiff(eulerAngles.x - LookRotation.x);
+            float yDiff = FixDiff(eulerAngles.y - LookRotation.y);
+
+            LookRotation = new(LookRotation.x + xDiff, LookRotation.y + yDiff);
         }
 
         private IEnumerator DoLerpRotation(Vector2 target, Action onLerpComplete, float duration, bool keepLookLocked = false)
         {
             blockLook = true;
 
-            target = new Vector2(rotation.x + target.x, rotation.y + target.y);
-            Vector2 current = rotation;
+            target = new Vector2(LookRotation.x + target.x, LookRotation.y + target.y);
+            Vector2 current = LookRotation;
             float elapsedTime = 0;
 
             while (elapsedTime < duration)
             {
                 elapsedTime += Time.deltaTime;
-                float t = Mathf.SmoothStep(0f, 1f, elapsedTime / duration);
+                float t = GameTools.SmootherStep(0f, 1f, elapsedTime / duration);
 
-                rotation.x = Mathf.LerpAngle(current.x, target.x, t);
-                rotation.y = Mathf.LerpAngle(current.y, target.y, t);
+                LookRotation.x = Mathf.LerpAngle(current.x, target.x, t);
+                LookRotation.y = Mathf.LerpAngle(current.y, target.y, t);
 
                 yield return null;
             }
 
-            rotation = target;
+            LookRotation = target;
             onLerpComplete?.Invoke();
 
             blockLook = keepLookLocked;
@@ -383,28 +367,28 @@ namespace UHFPS.Runtime
         {
             blockLook = true;
 
-            float newY = rotation.y < vLimit.x
-                ? vLimit.x : rotation.y > vLimit.y
-                ? vLimit.y : rotation.y;
+            float newY = LookRotation.y < vLimit.x
+                ? vLimit.x : LookRotation.y > vLimit.y
+                ? vLimit.y : LookRotation.y;
 
             Vector2 target = new Vector2(newX, newY);
-            Vector2 current = rotation;
+            Vector2 current = LookRotation;
             float elapsedTime = 0;
 
             while (elapsedTime < duration)
             {
                 elapsedTime += Time.deltaTime;
-                float t = Mathf.SmoothStep(0f, 1f, elapsedTime / duration);
+                float t = GameTools.SmootherStep(0f, 1f, elapsedTime / duration);
 
-                rotation.x = Mathf.LerpAngle(current.x, target.x, t);
-                rotation.y = Mathf.LerpAngle(current.y, target.y, t);
+                LookRotation.x = Mathf.LerpAngle(current.x, target.x, t);
+                LookRotation.y = Mathf.LerpAngle(current.y, target.y, t);
 
                 yield return null;
             }
 
-            rotation = target;
-            horizontalLimits = hLimit;
-            verticalLimits = vLimit;
+            LookRotation = target;
+            HorizontalLimits = hLimit;
+            VerticalLimits = vLimit;
 
             blockLook = keepLookLocked;
         }

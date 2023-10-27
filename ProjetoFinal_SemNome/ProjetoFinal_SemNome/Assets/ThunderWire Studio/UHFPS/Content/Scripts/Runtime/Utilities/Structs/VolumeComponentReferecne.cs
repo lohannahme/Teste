@@ -8,5 +8,10 @@ namespace UHFPS.Runtime
     {
         public Volume Volume;
         public int ComponentIndex;
+
+        public VolumeComponent GetVolumeComponent()
+        {
+            return Volume.profile.components[ComponentIndex];
+        }
     }
 }

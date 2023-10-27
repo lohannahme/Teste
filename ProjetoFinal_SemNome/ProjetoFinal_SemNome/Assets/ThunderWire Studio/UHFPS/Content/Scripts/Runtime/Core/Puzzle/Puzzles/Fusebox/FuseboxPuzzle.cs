@@ -46,7 +46,7 @@ namespace UHFPS.Runtime
         private void Awake()
         {
             audioSource = GetComponent<AudioSource>();
-            if (!SaveGameManager.IsGameJustLoaded)
+            if (!SaveGameManager.GameWillLoad)
             {
                 foreach (var fuse in Fuses)
                 {

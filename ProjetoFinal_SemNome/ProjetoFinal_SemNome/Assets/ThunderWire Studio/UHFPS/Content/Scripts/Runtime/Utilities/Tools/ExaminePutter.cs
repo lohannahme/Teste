@@ -1,5 +1,5 @@
-using UnityEngine;
 using UHFPS.Tools;
+using UnityEngine;
 
 namespace UHFPS.Runtime
 {
@@ -8,86 +8,149 @@ namespace UHFPS.Runtime
         public sealed class PutCurve
         {
             private readonly AnimationCurve curve;
-            public float evalMultiply = 1f;
-            public float curveTime = 0.1f;
 
-            public PutCurve(AnimationCurve curve)
-            {
-                this.curve = curve;
-            }
+            public float EvalMultiply { get; set; } = 1f;
+            public float CurveTime { get; set; } = 0.1f;
 
-            public float Eval(float time) => curve.Evaluate(time) * evalMultiply;
+            public PutCurve(AnimationCurve curve) => this.curve = curve;
+
+            public float Eval(float time) => curve.Evaluate(time) * EvalMultiply;
         }
 
-        public struct PutSettings
+        public sealed class RigidbodySettings
         {
-            public Vector3 putPosition;
-            public Quaternion putRotation;
-            public Vector3 putControl;
-            public PutCurve putPositionCurve;
-            public PutCurve putRotationCurve;
-            public bool isLocalSpace;
+            public Rigidbody Rigidbody { get; set; }
+            public bool IsKinematic { get; set; }
+            public bool UseGravity { get; set; }
 
-            public PutSettings(Transform tr, Vector3 controlOffset, PutCurve posCurve, PutCurve rotCurve, bool isLocalSpace)
+            public RigidbodySettings(Rigidbody rigidbody)
             {
-                putPosition = isLocalSpace ? tr.localPosition : tr.position;
-                putRotation = isLocalSpace ? tr.localRotation : tr.rotation;
-                putControl = isLocalSpace ? tr.localPosition + controlOffset : tr.position + controlOffset;
-                putPositionCurve = posCurve;
-                putRotationCurve = rotCurve;
-                this.isLocalSpace = isLocalSpace;
+                Rigidbody = rigidbody;
+                IsKinematic = rigidbody.isKinematic;
+                UseGravity = rigidbody.useGravity;
             }
         }
 
-        private PutSettings putSettings;
-        private Vector3 putStartPos;
-        private Quaternion putStartRot;
-        private bool putStarted;
+        public readonly struct TransformSettings
+        {
+            public Vector3 Position { get; }
+            public Quaternion Rotation { get; }
+            public Vector3 ControlOffset { get; }
 
-        private float putPosT;
-        private float putPosVelocity;
+            public TransformSettings(Vector3 position, Quaternion rotation, Vector3 controlOffset)
+            {
+                Position = position;
+                Rotation = rotation;
+                ControlOffset = controlOffset;
+            }
+        }
 
-        private float putRotT;
-        private float putRotVelocity;
+        public readonly struct CurveSettings
+        {
+            public PutCurve PositionCurve { get; }
+            public PutCurve RotationCurve { get; }
+
+            public CurveSettings(PutCurve positionCurve, PutCurve rotationCurve)
+            {
+                PositionCurve = positionCurve;
+                RotationCurve = rotationCurve;
+            }
+        }
+
+        public readonly struct PutSettings
+        {
+            public TransformSettings TransformData { get; }
+            public CurveSettings CurveData { get; }
+            public RigidbodySettings RigidbodySettings { get; }
+            public bool IsLocalSpace { get; }
+
+            public PutSettings(Transform tr, TransformSettings transformSettings, CurveSettings curveSettings, RigidbodySettings rigidbodySettings, bool isLocalSpace)
+            {
+                TransformData = new TransformSettings(
+                    isLocalSpace ? tr.localPosition : tr.position,
+                    isLocalSpace ? tr.localRotation : tr.rotation,
+                    isLocalSpace ? tr.localPosition + transformSettings.ControlOffset : tr.position + transformSettings.ControlOffset
+                );
+
+                CurveData = curveSettings;
+                RigidbodySettings = rigidbodySettings;
+                IsLocalSpace = isLocalSpace;
+            }
+        }
+
+        private PutSettings _putSettings;
+        private Vector3 _putStartPos;
+        private Quaternion _putStartRot;
+        private bool _putStarted;
+
+        private float _putPosT;
+        private float _putPosVelocity;
+
+        private float _putRotT;
+        private float _putRotVelocity;
 
         public void Put(PutSettings putSettings)
         {
-            this.putSettings = putSettings;
-            putStartPos = putSettings.isLocalSpace ? transform.localPosition : transform.position;
-            putStartRot = putSettings.isLocalSpace ? transform.localRotation : transform.rotation;
-            putStarted = true;
+            _putSettings = putSettings;
+            _putStartPos = putSettings.IsLocalSpace ? transform.localPosition : transform.position;
+            _putStartRot = putSettings.IsLocalSpace ? transform.localRotation : transform.rotation;
+            _putStarted = true;
         }
 
         private void Update()
         {
-            if (!putStarted) return;
+            if (!_putStarted) 
+                return;
 
-            float putPosCurve = putSettings.putPositionCurve.Eval(putPosT);
-            putPosT = Mathf.SmoothDamp(putPosT, 1f, ref putPosVelocity, putSettings.putPositionCurve.curveTime + putPosCurve);
+            UpdatePosition();
+            UpdateRotation();
 
-            if(!putSettings.isLocalSpace) transform.position = VectorE.QuadraticBezier(putStartPos, putSettings.putPosition, putSettings.putControl, putPosT);
-            else transform.localPosition = VectorE.QuadraticBezier(putStartPos, putSettings.putPosition, putSettings.putControl, putPosT);
-
-            float putRotCurve = putSettings.putRotationCurve.Eval(putRotT);
-            putRotT = Mathf.SmoothDamp(putRotT, 1f, ref putRotVelocity, putSettings.putRotationCurve.curveTime + putRotCurve);
-
-            if (!putSettings.isLocalSpace) transform.rotation = Quaternion.Slerp(putStartRot, putSettings.putRotation, putRotT);
-            else transform.localRotation = Quaternion.Slerp(putStartRot, putSettings.putRotation, putRotT);
-
-            if ((putPosT * putRotT) >= 0.99f)
+            if (_putPosT * _putRotT >= 0.99f)
             {
-                if (!putSettings.isLocalSpace)
-                {
-                    transform.SetPositionAndRotation(putSettings.putPosition, putSettings.putRotation);
-                }
-                else
-                {
-                    transform.localPosition = putSettings.putPosition;
-                    transform.localRotation = putSettings.putRotation;
-                }
-
+                SetFinalTransformState();
+                HandleRigidbodySettings();
                 Destroy(this);
             }
+        }
+
+        private void UpdatePosition()
+        {
+            float putPosCurve = _putSettings.CurveData.PositionCurve.Eval(_putPosT);
+            _putPosT = Mathf.SmoothDamp(_putPosT, 1f, ref _putPosVelocity, _putSettings.CurveData.PositionCurve.CurveTime + putPosCurve);
+
+            if (!_putSettings.IsLocalSpace)
+                transform.position = VectorE.QuadraticBezier(_putStartPos, _putSettings.TransformData.Position, _putSettings.TransformData.ControlOffset, _putPosT);
+            else
+                transform.localPosition = VectorE.QuadraticBezier(_putStartPos, _putSettings.TransformData.Position, _putSettings.TransformData.ControlOffset, _putPosT);
+        }
+
+        private void UpdateRotation()
+        {
+            float putRotCurve = _putSettings.CurveData.RotationCurve.Eval(_putRotT);
+            _putRotT = Mathf.SmoothDamp(_putRotT, 1f, ref _putRotVelocity, _putSettings.CurveData.RotationCurve.CurveTime + putRotCurve);
+
+            if (!_putSettings.IsLocalSpace)
+                transform.rotation = Quaternion.Slerp(_putStartRot, _putSettings.TransformData.Rotation, _putRotT);
+            else
+                transform.localRotation = Quaternion.Slerp(_putStartRot, _putSettings.TransformData.Rotation, _putRotT);
+        }
+
+        private void SetFinalTransformState()
+        {
+            if (!_putSettings.IsLocalSpace)
+                transform.SetPositionAndRotation(_putSettings.TransformData.Position, _putSettings.TransformData.Rotation);
+            else
+                transform.SetLocalPositionAndRotation(_putSettings.TransformData.Position, _putSettings.TransformData.Rotation);
+        }
+
+        private void HandleRigidbodySettings()
+        {
+            if (_putSettings.RigidbodySettings == null || _putSettings.RigidbodySettings.Rigidbody == null) 
+                return;
+
+            Rigidbody rigidbody = _putSettings.RigidbodySettings.Rigidbody;
+            rigidbody.isKinematic = _putSettings.RigidbodySettings.IsKinematic;
+            rigidbody.useGravity = _putSettings.RigidbodySettings.UseGravity;
         }
     }
 }

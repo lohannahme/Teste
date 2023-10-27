@@ -22,7 +22,7 @@ namespace ThunderWire.Editors
             foreach (var type in types)
             {
                 PlayerStateAsset stateAsset = (PlayerStateAsset)ScriptableObject.CreateInstance(type);
-                avaiableStates[index++] = stateAsset.GetStateKey();
+                avaiableStates[index++] = stateAsset.StateKey;
                 Object.DestroyImmediate(stateAsset);
             }
         }

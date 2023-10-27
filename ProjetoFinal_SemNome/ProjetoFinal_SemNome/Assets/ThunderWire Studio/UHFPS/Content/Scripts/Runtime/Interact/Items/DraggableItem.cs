@@ -1,11 +1,12 @@
 using UnityEngine;
 using UHFPS.Tools;
 using Newtonsoft.Json.Linq;
+using UnityEngine.Events;
 
 namespace UHFPS.Runtime
 {
     [RequireComponent(typeof(Rigidbody), typeof(AudioSource))]
-    public class DraggableItem : SaveableBehaviour
+    public class DraggableItem : SaveableBehaviour, IOnDragStart, IOnDragEnd
     {
         [Tooltip("Minimum and maximum distance to which the object can be zoomed.")]
         public MinMax ZoomDistance;
@@ -31,6 +32,9 @@ namespace UHFPS.Runtime
         public float SlidingVolumeModifier = 5f;
         [Tooltip("Speed at which the volume is faded when the sliding stops.")]
         public float VolumeFadeOffSpeed = 5f;
+
+        public UnityEvent OnDragStarted;
+        public UnityEvent OnDragEnded;
 
         public bool Collision;
 
@@ -98,6 +102,16 @@ namespace UHFPS.Runtime
             lastImpact = GameTools.RandomUnique(0, ImpactSounds.Length, lastImpact);
             AudioClip audioClip = ImpactSounds[lastImpact];
             AudioSource.PlayClipAtPoint(audioClip, transform.position, volume);
+        }
+
+        public void OnDragStart()
+        {
+            OnDragStarted?.Invoke();
+        }
+
+        public void OnDragEnd()
+        {
+            OnDragEnded?.Invoke();
         }
 
         public override StorableCollection OnSave()

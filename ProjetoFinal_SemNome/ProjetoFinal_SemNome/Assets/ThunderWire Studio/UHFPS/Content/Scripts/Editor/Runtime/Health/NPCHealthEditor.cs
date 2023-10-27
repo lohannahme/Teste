@@ -112,12 +112,13 @@ namespace UHFPS.Editors
 
                 EditorGUILayout.Space();
 
-                using (new EditorDrawing.BorderBoxScope(new GUIContent("Events")))
+                if(EditorDrawing.BeginFoldoutBorderLayout(Properties["OnTakeDamage"], new GUIContent("Events")))
                 {
                     Properties.Draw("OnTakeDamage");
                     Properties.Draw("OnDeath");
                     if (Properties.BoolValue("RemoveCorpse"))
                         Properties.Draw("OnCorpseRemove");
+                    EditorDrawing.EndBorderHeaderLayout();
                 }
             }
             serializedObject.ApplyModifiedProperties();

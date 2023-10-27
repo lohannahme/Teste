@@ -45,7 +45,13 @@ namespace UHFPS.Runtime
 
         // Game Panels
         public CanvasGroup InventoryPanel;
+        public CanvasGroup AlertsPanel;
         public Transform FloatingIcons;
+        #endregion
+
+        #region Pause
+        public Button SaveGameButton;
+        public Button LoadGameButton;
         #endregion
 
         #region UserInterface
@@ -407,6 +413,18 @@ namespace UHFPS.Runtime
         }
 
         /// <summary>
+        /// Set the interaction state of the save and load button.
+        /// </summary>
+        /// <remarks>
+        /// Useful if you need to disable the save and load functionality when you are in a certain zone. (e.g. inside elevator, cutscene)
+        /// </remarks>
+        public void SetSaveInteractable(bool saveBtnState, bool loadBtnState)
+        {
+            SaveGameButton.interactable = saveBtnState;
+            LoadGameButton.interactable = loadBtnState;
+        }
+
+        /// <summary>
         /// Show timed interact progress.
         /// </summary>
         public void ShowInteractProgress(bool show, float progress)
@@ -537,6 +555,7 @@ namespace UHFPS.Runtime
                     DeadPanel.alpha = 0;
                     DisableAllGamePanels();
                     HUDPanel.alpha = 1;
+                    AlertsPanel.alpha = 1;
                     break;
                 case PanelType.InventoryPanel:
                     SetPanelInteractable(PanelType.GamePanel);
@@ -544,6 +563,7 @@ namespace UHFPS.Runtime
                     PausePanel.alpha = 0;
                     DeadPanel.alpha = 0;
                     DisableAllGamePanels();
+                    AlertsPanel.alpha = 0;
                     InventoryPanel.alpha = 1;
                     TabPanel.alpha = 1;
                     IsInventoryShown = true;
@@ -578,11 +598,12 @@ namespace UHFPS.Runtime
         }
 
         /// <summary>
-        /// Disable all feature panels. (Inventory etc.)
+        /// Disable all feature panels. (Inventory, Alerts etc.)
         /// </summary>
         public void DisableAllFeaturePanels()
         {
             InventoryPanel.alpha = 0;
+            AlertsPanel.alpha = 0;
         }
 
         /// <summary>

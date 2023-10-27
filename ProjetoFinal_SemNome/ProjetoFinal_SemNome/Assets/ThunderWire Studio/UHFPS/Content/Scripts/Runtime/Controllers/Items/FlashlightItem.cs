@@ -59,7 +59,7 @@ namespace UHFPS.Runtime
             flashlightPanel = (CanvasGroup)behaviours[0];
             batteryFill = (Image)behaviours[1];
 
-            if (!SaveGameManager.IsGameJustLoaded)
+            if (!SaveGameManager.GameWillLoad)
             {
                 currentBattery = BatteryPercentage.From(BatteryLife);
                 UpdateBattery();

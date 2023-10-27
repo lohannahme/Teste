@@ -4,7 +4,7 @@ using System;
 
 namespace UHFPS.Rendering
 {
-    [Serializable, VolumeComponentMenu("UHFPS PostProcess/Dual Kawase Blur")]
+    [Serializable, VolumeComponentMenu("UHFPS Post-Processing/Dual Kawase Blur")]
     public class DualKawaseBlur : VolumeComponent, IPostProcessComponent
     {
         public ClampedFloatParameter BlurRadius = new(0, 0, 15);

@@ -181,7 +181,7 @@ namespace UHFPS.Runtime
                 draggableRigidbody.isKinematic = false;
             }
 
-            foreach (var dragStart in raycastObject.GetComponents<IOnDragStart>())
+            foreach (var dragStart in raycastObject.GetComponentsInChildren<IOnDragStart>())
             {
                 dragStart.OnDragStart();
             }
@@ -266,7 +266,7 @@ namespace UHFPS.Runtime
                 //draggableRigidbody.angularVelocity = Vector3.Lerp(draggableRigidbody.angularVelocity, Vector3.zero, 0.3f);
             }
 
-            foreach (var dragUpdate in currentDraggable.GetComponents<IOnDragUpdate>())
+            foreach (var dragUpdate in currentDraggable.GetComponentsInChildren<IOnDragUpdate>())
             {
                 dragUpdate.OnDragUpdate(targetVelocity);
             }
@@ -299,7 +299,7 @@ namespace UHFPS.Runtime
                 isRotating = false;
             }
 
-            foreach (var dragEnd in currentDraggable.GetComponents<IOnDragEnd>())
+            foreach (var dragEnd in currentDraggable.GetComponentsInChildren<IOnDragEnd>())
             {
                 dragEnd.OnDragEnd();
             }

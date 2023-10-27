@@ -6,56 +6,42 @@ using ThunderWire.Editors;
 namespace UHFPS.Editors
 {
     [CustomEditor(typeof(LevelInteract))]
-    public class LevelInteractEditor : Editor
+    public class LevelInteractEditor : InspectorEditor<LevelInteract>
     {
-        SerializedProperty LevelLoadType;
-        SerializedProperty NextLevelName;
-
-        SerializedProperty CustomTransform;
-        SerializedProperty TargetTransform;
-        SerializedProperty LookUpDown;
-
-        private void OnEnable()
-        {
-            LevelLoadType = serializedObject.FindProperty("LevelLoadType");
-            NextLevelName = serializedObject.FindProperty("NextLevelName");
-
-            CustomTransform = serializedObject.FindProperty("CustomTransform");
-            TargetTransform = serializedObject.FindProperty("TargetTransform");
-            LookUpDown = serializedObject.FindProperty("LookUpDown");
-        }
-
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
 
-            LevelInteract.LevelType levelType = (LevelInteract.LevelType)LevelLoadType.enumValueIndex;
+            LevelInteract.LevelTypeEnum levelType = (LevelInteract.LevelTypeEnum)Properties["LevelType"].enumValueIndex;
 
             EditorDrawing.DrawInspectorHeader(new GUIContent("Level Interact"), target);
             EditorGUILayout.Space();
 
-            using(new EditorDrawing.BorderBoxScope(new GUIContent("Next Level"), 18f, true))
+            Properties.Draw("TriggerType");
+            EditorGUILayout.Space();
+
+            using (new EditorDrawing.BorderBoxScope(new GUIContent("Next Level"), 18f, true))
             {
-                EditorGUILayout.PropertyField(LevelLoadType);
-                EditorGUILayout.PropertyField(NextLevelName);
+                Properties.Draw("LevelType");
+                Properties.Draw("NextLevelName");
                 EditorGUILayout.Space();
 
-                if(levelType == LevelInteract.LevelType.NextLevel)
+                if(levelType == LevelInteract.LevelTypeEnum.NextLevel)
                     EditorGUILayout.HelpBox("The current world state will be saved and the player data will be saved and transferred to the next level.", MessageType.Info);
-                else if (levelType == LevelInteract.LevelType.WorldState)
+                else if (levelType == LevelInteract.LevelTypeEnum.WorldState)
                     EditorGUILayout.HelpBox("The current world state will be saved, the world state of the next level will be loaded and the player data will be transferred. (Previous Scene Persistency must be enabled!)", MessageType.Info);
-                else if (levelType == LevelInteract.LevelType.PlayerData)
+                else if (levelType == LevelInteract.LevelTypeEnum.PlayerData)
                     EditorGUILayout.HelpBox("Only the player data will be saved and transferred to the next level.", MessageType.Info);
 
             }
 
             EditorGUILayout.Space();
 
-            CustomTransform.boolValue = EditorDrawing.BeginToggleBorderLayout(new GUIContent("Custom Transform"), CustomTransform.boolValue);
-            using (new EditorGUI.DisabledGroupScope(!CustomTransform.boolValue))
+            Properties["CustomTransform"].boolValue = EditorDrawing.BeginToggleBorderLayout(new GUIContent("Custom Transform"), Properties["CustomTransform"].boolValue);
+            using (new EditorGUI.DisabledGroupScope(!Properties["CustomTransform"].boolValue))
             {
-                EditorGUILayout.PropertyField(TargetTransform);
-                EditorGUILayout.PropertyField(LookUpDown);
+                Properties.Draw("TargetTransform");
+                Properties.Draw("LookUpDown");
                 EditorGUILayout.Space();
                 EditorGUILayout.HelpBox("The player position and rotation will be replaced by custom position and rotation specified by the target transform.", MessageType.Info);
             }

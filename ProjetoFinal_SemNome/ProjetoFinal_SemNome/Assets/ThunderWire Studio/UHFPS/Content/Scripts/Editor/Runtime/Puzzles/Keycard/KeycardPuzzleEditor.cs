@@ -18,7 +18,8 @@ namespace UHFPS.Editors
                 base.OnInspectorGUI();
                 EditorGUILayout.Space();
 
-                Properties.Draw("KeycardItem");
+                if (Target.SingleKeycard) Properties.Draw("KeycardItem");
+                else Properties.Draw("UsableKeycards");
                 EditorGUILayout.Space();
 
                 using(new EditorDrawing.BorderBoxScope(new GUIContent("Settings")))
@@ -29,6 +30,7 @@ namespace UHFPS.Editors
                     EditorGUILayout.EndVertical();
 
                     EditorGUILayout.Space(2f);
+                    Properties.Draw("SingleKeycard");
                     Properties.Draw("RemoveKeycardAfterUse");
                     Properties.Draw("AccessUpdateTime");
                 }
@@ -77,6 +79,7 @@ namespace UHFPS.Editors
                 {
                     Properties.Draw("OnAccessGranted");
                     Properties.Draw("OnAccessDenied");
+                    Properties.Draw("OnWrongItem");
                     EditorDrawing.EndBorderHeaderLayout();
                 }
             }

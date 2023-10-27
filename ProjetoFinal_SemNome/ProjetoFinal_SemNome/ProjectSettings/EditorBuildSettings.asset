@@ -17,6 +17,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Dia1_Rua.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: "Assets/Scenes/Dia1_Pr\xE9dio.unity"
+    guid: 118bfee77c1e81343890f80a0a7eb5d9
+  - enabled: 1
+    path: Assets/Scenes/Dia1_Apartamento.unity
+    guid: 75129f485f609d5488be37df54f86df1
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: ae838b1c970aab641bb8e4643590df24, type: 2}
     com.unity.input.settings: {fileID: 11400000, guid: ce68c4c37abec5347801e4204a280574, type: 2}

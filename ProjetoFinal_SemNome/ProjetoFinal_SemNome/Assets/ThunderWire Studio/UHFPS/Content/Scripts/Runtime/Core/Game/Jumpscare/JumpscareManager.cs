@@ -56,7 +56,6 @@ namespace UHFPS.Runtime
         private float fearTimer;
         private float wobbleTimer;
 
-
         private void Awake()
         {
             playerPresence = GetComponent<PlayerPresenceManager>();

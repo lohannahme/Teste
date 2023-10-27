@@ -1,6 +1,9 @@
-using System.Collections.Generic;
-using System.Reactive.Subjects;
 using System;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Reactive.Disposables;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Newtonsoft.Json.Linq;
@@ -13,6 +16,18 @@ namespace UHFPS.Runtime
 {
     public enum Orientation { Horizontal, Vertical };
     public enum InventorySound { ItemSelect, ItemMove, ItemPut, ItemError }
+
+    public struct ItemUpdate
+    {
+        public string guid;
+        public int quantity;
+
+        public ItemUpdate(string guid, int quantity)
+        {
+            this.guid = guid;
+            this.quantity = quantity;
+        }
+    }
 
     [Docs("https://docs.twgamesdev.com/uhfps/guides/inventory")]
     public partial class Inventory : Singleton<Inventory>, ISaveableCustom
@@ -38,7 +53,7 @@ namespace UHFPS.Runtime
 
             [Header("Slot Textures")]
             public Sprite normalSlotFrame;
-            public Sprite restrictedSlotFrame;
+            public Sprite lockedSlotFrame;
 
             [Header("Slot Colors")]
             public Color itemNormalColor = Color.white;
@@ -164,7 +179,7 @@ namespace UHFPS.Runtime
             public InventorySlot[,] slotsSpace;
         }
 
-        public enum SlotType { Restricted, Inventory, Container }
+        public enum SlotType { Locked, Inventory, Container }
         #endregion
 
         public InventoryAsset inventoryAsset;
@@ -206,6 +221,7 @@ namespace UHFPS.Runtime
         private float nextSoundDelay;
         private bool contextShown;
 
+        private readonly CompositeDisposable disposables = new();
         private IInventorySelector inventorySelector;
         private PlayerPresenceManager playerPresence;
         private GameManager gameManager;
@@ -219,8 +235,10 @@ namespace UHFPS.Runtime
 
         public bool ContainerOpened => currentContainer != null;
 
-        public Subject<InventoryItem> OnItemAdded = new(); 
-        public Subject<string> OnItemRemoved = new();
+        public Subject<ItemUpdate> OnItemAdded = new(); 
+        public Subject<ItemUpdate> OnItemRemoved = new();
+        public Subject<ItemUpdate> OnStackChanged = new();
+        public Subject<ItemUpdate> OnInventoryChanged = new();
 
         public Vector2Int SlotXY
         {
@@ -248,16 +266,10 @@ namespace UHFPS.Runtime
             {
                 try
                 {
-                    if (ContainerOpened)
+                    if (ContainerOpened && IsContainerCoords(x, y))
                     {
-                        if (IsContainerCoords(x, y))
-                        {
-                            return containerSlots[y, x];
-                        }
-                        else
-                        {
-                            return slots[y, x - currentContainer.Columns];
-                        }
+                        int containerX = x - SlotXY.x;
+                        return containerSlots[y, containerX];
                     }
 
                     return slots[y, x];
@@ -274,6 +286,7 @@ namespace UHFPS.Runtime
             slotArray = new SlotType[settings.rows, settings.columns];
             slots = new InventorySlot[settings.rows, settings.columns];
             items = new Dictionary<string, Item>();
+
             carryingItems = new Dictionary<InventoryItem, InventorySlot[]>();
             containerItems = new Dictionary<InventoryItem, InventorySlot[]>();
 
@@ -293,14 +306,16 @@ namespace UHFPS.Runtime
                     rect.localScale = Vector3.one;
 
                     InventorySlot inventorySlot = slot.GetComponent<InventorySlot>();
+                    inventorySlot.frame.sprite = slotSettings.normalSlotFrame;
+
                     slots[y, x] = inventorySlot;
                     slotArray[y, x] = SlotType.Inventory;
 
                     if (expandableSlots.enabled && y >= settings.rows - expandableSlots.expandableRows)
                     {
-                        inventorySlot.frame.sprite = slotSettings.restrictedSlotFrame;
+                        inventorySlot.frame.sprite = slotSettings.lockedSlotFrame;
                         inventorySlot.CanvasGroup.alpha = 0.3f;
-                        slotArray[y, x] = SlotType.Restricted;
+                        slotArray[y, x] = SlotType.Locked;
                     }
                 }
             }
@@ -339,13 +354,18 @@ namespace UHFPS.Runtime
             contextMenu.blockerPanel.SetActive(false);
             itemInfo.infoPanel.SetActive(false);
 
+            // subscribe events to one event
+            disposables.Add(OnItemAdded.Subscribe(OnInventoryChanged));
+            disposables.Add(OnItemRemoved.Subscribe(OnInventoryChanged));
+            disposables.Add(OnStackChanged.Subscribe(OnInventoryChanged));
+
             // initialize context handler
             InitializeContextHandler();
         }
 
         private void Start()
         {
-            if (!SaveGameManager.IsGameJustLoaded)
+            if (!SaveGameManager.GameWillLoad)
             {
                 foreach (var item in startingItems)
                 {
@@ -370,6 +390,11 @@ namespace UHFPS.Runtime
             ContextUpdate();
         }
 
+        private void OnDestroy()
+        {
+            disposables.Dispose();
+        }
+
         /// <summary>
         /// Add item to the free inventory space.
         /// </summary>
@@ -379,68 +404,97 @@ namespace UHFPS.Runtime
         /// <returns>Status whether the item has been added to the inventory.</returns>
         public bool AddItem(string guid, ushort quantity, ItemCustomData customData)
         {
+            return AddItem(guid, quantity, customData, out _);
+        }
+
+        /// <summary>
+        /// Add item to the free inventory space.
+        /// </summary>
+        /// <param name="guid">Unique ID of the item.</param>
+        /// <param name="quantity">Quantity of the item to be added.</param>
+        /// <param name="customData">Custom data of specified item.</param>
+        /// <param name="inventoryItem">Item that has been added to the inventory.</param>
+        /// <returns>Status whether the item has been added to the inventory.</returns>
+        public bool AddItem(string guid, ushort quantity, ItemCustomData customData, out InventoryItem inventoryItem)
+        {
+            inventoryItem = null;
+            int availableQ = quantity;
+
+            // check if the guid is in the items cache
             if (items.ContainsKey(guid))
             {
                 Item item = items[guid];
                 ushort maxStack = item.Properties.maxStack;
-                InventoryItem inventoryItem = null;
 
-                if (ContainsItem(guid, out OccupyData itemData) && item.Settings.isStackable)
+                if (item.Settings.isStackable && ContainsItemMany(guid, out OccupyData[] itemDatas))
                 {
-                    inventoryItem = itemData.inventoryItem;
-                    int currQuantity = itemData.inventoryItem.Quantity;
-                    int remainingQ = 0;
+                    // sort items by the closest quantity to maxStack
+                    itemDatas = itemDatas.OrderByDescending(x =>
+                    {
+                        int itemQuantity = x.inventoryItem.Quantity;
+                        return maxStack - itemQuantity;
+                    }).ToArray();
 
-                    if (maxStack == 0)
+                    // iterate over each item with the same guid
+                    foreach (var itemData in itemDatas)
                     {
-                        currQuantity += quantity;
-                        itemData.inventoryItem.SetQuantity(currQuantity);
-                    }
-                    else if (currQuantity <= maxStack)
-                    {
-                        int newQ = currQuantity + quantity;
-                        int q = Mathf.Min(maxStack, newQ);
-                        remainingQ = newQ - q;
-                        itemData.inventoryItem.SetQuantity(q);
+                        int currQuantity = itemData.inventoryItem.Quantity;
+                        inventoryItem = itemData.inventoryItem;
+
+                        if (maxStack == 0)
+                        {
+                            currQuantity += availableQ;
+                            itemData.inventoryItem.SetQuantity(currQuantity);
+                            OnStackChanged.OnNext(new(guid, itemData.inventoryItem.Quantity));
+                        }
+                        else if (currQuantity < maxStack)
+                        {
+                            int newQ = currQuantity + availableQ;
+                            int q = Mathf.Min(maxStack, newQ);
+                            availableQ -= q - currQuantity;
+                            itemData.inventoryItem.SetQuantity(q);
+                            OnStackChanged.OnNext(new(guid, itemData.inventoryItem.Quantity));
+                        }
+
+                        if (availableQ <= 0)
+                            break;
                     }
 
-                    if (remainingQ > 0)
+                    // if there is still some quantity left, create new items
+                    if (availableQ > 0)
                     {
-                        int iterations = (int)Math.Ceiling((float)remainingQ / maxStack);
+                        int iterations = (int)Math.Ceiling((float)availableQ / maxStack);
                         for (int i = 0; i < iterations; i++)
                         {
-                            int q = Mathf.Min(maxStack, remainingQ);
+                            int q = Mathf.Min(maxStack, availableQ);
+                            availableQ -= q;
                             inventoryItem = CreateItem(guid, (ushort)q, customData);
-                            remainingQ -= maxStack;
+                            OnItemAdded.OnNext(new(guid, q));
                         }
                     }
                 }
                 else
                 {
-                    if (quantity < maxStack || maxStack == 0)
+                    if (availableQ < maxStack || maxStack == 0)
                     {
-                        inventoryItem = CreateItem(guid, quantity, customData);
+                        inventoryItem = CreateItem(guid, availableQ, customData);
+                        OnItemAdded.OnNext(new(guid, availableQ));
                     }
                     else
                     {
-                        int iterations = (int)Math.Ceiling((float)quantity / maxStack);
+                        int iterations = (int)Math.Ceiling((float)availableQ / maxStack);
                         for (int i = 0; i < iterations; i++)
                         {
-                            int q = Mathf.Min(maxStack, quantity);
+                            int q = Mathf.Min(maxStack, availableQ);
+                            availableQ -= q;
                             inventoryItem = CreateItem(guid, (ushort)q, customData);
-                            quantity -= maxStack;
+                            OnItemAdded.OnNext(new(guid, q));
                         }
                     }
                 }
-
-                if (inventoryItem != null)
-                {
-                    OnItemAdded.OnNext(inventoryItem);
-                    return true;
-                }
             }
 
-            return false;
+            return inventoryItem != null;
         }
 
         /// <summary>
@@ -452,14 +506,16 @@ namespace UHFPS.Runtime
         {
             if (ContainsItem(guid, out OccupyData itemData))
             {
+                int quantity = itemData.inventoryItem.Quantity;
                 carryingItems.Remove(itemData.inventoryItem);
                 Destroy(itemData.inventoryItem.gameObject);
+
                 foreach (var slot in itemData.occupiedSlots)
                 {
                     slot.itemInSlot = null;
                 }
 
-                OnItemRemoved.OnNext(guid);
+                OnItemRemoved.OnNext(new (guid, quantity));
                 return true;
             }
 
@@ -480,19 +536,20 @@ namespace UHFPS.Runtime
                 {
                     int q = itemData.inventoryItem.Quantity - quantity;
                     itemData.inventoryItem.SetQuantity(q);
-                    OnItemRemoved.OnNext(guid);
+                    OnItemRemoved.OnNext(new(guid, quantity));
                     return q;
                 }
                 else
                 {
                     carryingItems.Remove(itemData.inventoryItem);
                     Destroy(itemData.inventoryItem.gameObject);
+
                     foreach (var slot in itemData.occupiedSlots)
                     {
                         slot.itemInSlot = null;
                     }
 
-                    OnItemRemoved.OnNext(guid);
+                    OnItemRemoved.OnNext(new(guid, quantity));
                 }
             }
 
@@ -504,10 +561,14 @@ namespace UHFPS.Runtime
         /// </summary>
         public void RemoveItem(InventoryItem inventoryItem)
         {
+            string guid = inventoryItem.ItemGuid;
+            int quantity = inventoryItem.Quantity;
+
             if (!inventoryItem.isContainerItem && carryingItems.ContainsKey(inventoryItem))
             {
                 InventorySlot[] occupiedSlots = carryingItems[inventoryItem];
                 carryingItems.Remove(inventoryItem);
+
                 foreach (var slot in occupiedSlots)
                 {
                     slot.itemInSlot = null;
@@ -517,6 +578,7 @@ namespace UHFPS.Runtime
             {
                 InventorySlot[] occupiedSlots = containerItems[inventoryItem];
                 containerItems.Remove(inventoryItem);
+
                 foreach (var slot in occupiedSlots)
                 {
                     slot.itemInSlot = null;
@@ -526,7 +588,7 @@ namespace UHFPS.Runtime
                     currentContainer.Remove(inventoryItem);
             }
 
-            OnItemRemoved.OnNext(inventoryItem.ItemGuid);
+            OnItemRemoved.OnNext(new(guid, quantity));
             Destroy(inventoryItem.gameObject);
         }
 
@@ -535,86 +597,32 @@ namespace UHFPS.Runtime
         /// </summary>
         public int RemoveItem(InventoryItem inventoryItem, ushort quantity)
         {
+            string guid = inventoryItem.ItemGuid;
+
             if (carryingItems.ContainsKey(inventoryItem))
             {
                 if ((inventoryItem.Quantity - quantity) >= 1)
                 {
                     int q = inventoryItem.Quantity - quantity;
                     inventoryItem.SetQuantity(q);
-                    OnItemRemoved.OnNext(inventoryItem.ItemGuid);
                     return q;
                 }
                 else
                 {
                     InventorySlot[] occupiedSlots = carryingItems[inventoryItem];
                     carryingItems.Remove(inventoryItem);
+
                     foreach (var slot in occupiedSlots)
                     {
                         slot.itemInSlot = null;
                     }
 
-                    OnItemRemoved.OnNext(inventoryItem.ItemGuid);
                     Destroy(inventoryItem.gameObject);
                 }
             }
 
+            OnItemRemoved.OnNext(new(guid, quantity));
             return 0;
-        }
-
-        /// <summary>
-        /// Get <see cref="InventoryItem"/> reference from Inventory.
-        /// </summary>
-        public InventoryItem GetInventoryItem(string guid)
-        {
-            if(ContainsItem(guid, out OccupyData occupyData))
-                return occupyData.inventoryItem;
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get <see cref="OccupyData"/> reference from Inventory.
-        /// </summary>
-        public OccupyData GetOccupyData(string guid)
-        {
-            if (ContainsItem(guid, out OccupyData occupyData))
-                return occupyData;
-
-            return default;
-        }
-
-        /// <summary>
-        /// Get the quantity of the item in the inevntory.
-        /// </summary>
-        public int GetItemQuantity(string guid)
-        {
-            if (ContainsItem(guid, out OccupyData occupyData))
-                return occupyData.inventoryItem.Quantity;
-
-            return 0;
-        }
-
-        /// <summary>
-        /// Set the quantity of the item in the inevntory.
-        /// </summary>
-        public void SetItemQuantity(string guid, ushort quantity, bool removeWhenZero = true)
-        {
-            if (ContainsItem(guid, out OccupyData occupyData))
-            {
-                if (quantity >= 1 || !removeWhenZero)
-                {
-                    occupyData.inventoryItem.SetQuantity(quantity);
-                }
-                else if(removeWhenZero)
-                {
-                    carryingItems.Remove(occupyData.inventoryItem);
-                    Destroy(occupyData.inventoryItem.gameObject);
-                    foreach (var slot in occupyData.occupiedSlots)
-                    {
-                        slot.itemInSlot = null;
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -636,7 +644,7 @@ namespace UHFPS.Runtime
                         if (toExpand == 0) 
                             break;
 
-                        if(slotArray[y, x] == SlotType.Restricted)
+                        if(slotArray[y, x] == SlotType.Locked)
                         {
                             InventorySlot slot = slots[y, x];
                             slot.frame.sprite = slotSettings.normalSlotFrame;
@@ -650,47 +658,6 @@ namespace UHFPS.Runtime
 
                 expandedSlots += expandable;
             }
-        }
-
-        /// <summary>
-        /// Check if there is a free space from the desired position.
-        /// </summary>
-        /// <param name="x">Slot X position.</param>
-        /// <param name="y">Slot Y position.</param>
-        /// <returns>Status whether there is free space in desired position.</returns>
-        public bool CheckSpaceFromPosition(int x, int y, int width, int height, InventoryItem item = null)
-        {
-            for (int yy = y; yy < y + height; yy++)
-            {
-                for (int xx = x; xx < x + width; xx++)
-                {
-                    if (yy < MaxSlotXY.y && xx < MaxSlotXY.x)
-                    {
-                        if (slotArray[yy, xx] == SlotType.Restricted)
-                            return false;
-
-                        InventorySlot slot = this[yy, xx];
-                        if (slot == null) return false;
-
-                        if (slot.itemInSlot != null)
-                        {
-                            if (item != null && slot.itemInSlot == item) 
-                                continue;
-                            return false;
-                        }
-                    }
-                    else return false;
-                }
-            }
-
-            // check if width of the item has not overflowed from the container into the inventory
-            if (currentContainer != null)
-            {
-                return (x <= currentContainer.Columns && x + width <= currentContainer.Columns) ||
-                    (x >= currentContainer.Columns && x + width >= currentContainer.Columns);
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -729,6 +696,9 @@ namespace UHFPS.Runtime
                 }
             }
 
+            string guid = inventoryItem.ItemGuid;
+            int quantity = inventoryItem.Quantity;
+
             // if the new coordinates are in inventory space
             if (!newContainerSpace)
             {
@@ -742,6 +712,7 @@ namespace UHFPS.Runtime
 
                     // add item to inventory space
                     carryingItems.Add(inventoryItem, null);
+                    OnItemAdded.OnNext(new(guid, quantity));
                 }
 
                 // set item parent to the inventory panel transform
@@ -750,6 +721,9 @@ namespace UHFPS.Runtime
             // if the new coordinates are in container space
             else
             {
+                Vector2Int localCoords = newCoords;
+                localCoords.x -= SlotXY.x;
+
                 if (!lastContainerSpace)
                 {
                     // remove item from the inventory space
@@ -757,17 +731,18 @@ namespace UHFPS.Runtime
                     RemoveShortcut(inventoryItem);
 
                     // add item to container space
-                    currentContainer.Store(inventoryItem, newCoords);
+                    currentContainer.Store(inventoryItem, localCoords);
                     containerItems.Add(inventoryItem, null);
                     inventoryItem.isContainerItem = true;
+                    OnItemRemoved.OnNext(new(guid, quantity));
                 }
                 else
                 {
                     // move a container item to new coordinates
                     currentContainer.Move(inventoryItem, new FreeSpace()
                     {
-                        x = newCoords.x,
-                        y = newCoords.y,
+                        x = localCoords.x,
+                        y = localCoords.y,
                         orientation = inventoryItem.orientation
                     });
                 }
@@ -786,44 +761,6 @@ namespace UHFPS.Runtime
 
             // occupy new slots
             OccupySlots(newContainerSpace, newCoords, inventoryItem);
-        }
-
-        /// <summary>
-        /// Occupy slots with the item in the new coordinates.
-        /// </summary>
-        private void OccupySlots(bool isContainerSpace, Vector2Int newCoords, InventoryItem inventoryItem)
-        {
-            Item item = inventoryItem.Item;
-            int maxY = item.Height, maxX = item.Width;
-
-            // rotate the item if the orientation is vertical
-            if (inventoryItem.orientation == Orientation.Vertical)
-            {
-                maxY = item.Width;
-                maxX = item.Height;
-            }
-
-            InventorySlot[] slotsToOccupy = new InventorySlot[maxY * maxX];
-
-            int slotIndex = 0;
-            for (int yy = newCoords.y; yy < newCoords.y + maxY; yy++)
-            {
-                for (int xx = newCoords.x; xx < newCoords.x + maxX; xx++)
-                {
-                    InventorySlot slot = this[yy, xx];
-                    slot.itemInSlot = inventoryItem;
-                    slotsToOccupy[slotIndex++] = slot;
-                }
-            }
-
-            if (!isContainerSpace)
-            {
-                carryingItems[inventoryItem] = slotsToOccupy;
-            }
-            else
-            {
-                containerItems[inventoryItem] = slotsToOccupy;
-            }
         }
 
         /// <summary>
@@ -851,7 +788,7 @@ namespace UHFPS.Runtime
             // slot instantiation
             for (int y = 0; y < container.Rows; y++)
             {
-                for (int x = container.Columns - 1; x >= 0; x--)
+                for (int x = 0; x < container.Columns; x++)
                 {
                     GameObject slot = Instantiate(slotSettings.slotPrefab, containerSettings.containerSlots.transform);
                     slot.name = $"Container Slot [{y},{x}]";
@@ -880,16 +817,13 @@ namespace UHFPS.Runtime
 
                 inventoryItem.ContainerGuid = containerItem.Key;
                 inventoryItem.isContainerItem = true;
-                inventoryItem.ContainerOpened(currentContainer.Columns);
-
+                inventoryItem.ContainerOpened((ushort)SlotXY.x);
                 containerItems.Add(inventoryItem, null);
-                OccupySlots(true, containerItem.Value.Coords, inventoryItem);
-            }
 
-            // set carrying items container opened
-            foreach (var carryingItem in carryingItems.Keys)
-            {
-                carryingItem.ContainerOpened(currentContainer.Columns);
+                Vector2Int containerCoords = containerItem.Value.Coords;
+                containerCoords.x += SlotXY.x;
+
+                OccupySlots(true, containerCoords, inventoryItem);
             }
 
             containerSettings.containerObject.gameObject.SetActive(true);
@@ -904,44 +838,6 @@ namespace UHFPS.Runtime
             gameManager.SetBlur(true, true);
             gameManager.FreezePlayer(true, true, false);
             gameManager.ShowInventoryPanel(true);
-        }
-
-        private void SetInventorySlots(InventoryContainer container, bool add)
-        {
-            int newRows = Mathf.Max(SlotXY.y, add ? container.Rows : 0);
-            int newColumns = SlotXY.x + (add ? container.Columns : 0);
-            SlotType[,] newSlotArray = new SlotType[newRows, newColumns];
-
-            if (add)
-            {
-                for (int y = 0; y < newRows; y++)
-                {
-                    for (int x = 0; x < newColumns; x++)
-                    {
-                        if (x < container.Columns)
-                        {
-                            newSlotArray[y, x] = SlotType.Container;
-                        }
-                        else if (y < SlotXY.y)
-                        {
-                            int invX = x - container.Columns;
-                            newSlotArray[y, x] = slotArray[y, invX]; 
-                        }
-                    }
-                }
-            }
-            else
-            {
-                for (int y = 0; y < newRows; y++)
-                {
-                    for (int x = 0; x < newColumns; x++)
-                    {
-                        newSlotArray[y, x] = slotArray[y, container.Columns + x];
-                    }
-                }
-            }
-
-            slotArray = newSlotArray;
         }
 
         /// <summary>
@@ -1012,152 +908,6 @@ namespace UHFPS.Runtime
             StartCoroutine(coroutine);
         }
 
-        /// <summary>
-        /// Check if the item is in inventory.
-        /// </summary>
-        /// <param name="guid">Unique ID of the item.</param>
-        /// <returns>Status whether the item is in inventory.</returns>
-        public bool ContainsItem(string guid, out OccupyData occupyData)
-        {
-            if (carryingItems.Count > 0)
-            {
-                foreach (var item in carryingItems)
-                {
-                    if (item.Key.ItemGuid == guid)
-                    {
-                        occupyData = new OccupyData()
-                        {
-                            inventoryItem = item.Key,
-                            occupiedSlots = item.Value
-                        };
-                        return true;
-                    }
-                }
-            }
-
-            occupyData = new OccupyData();
-            return false;
-        }
-
-        /// <summary>
-        /// Check if the item is in inventory.
-        /// </summary>
-        /// <param name="guid">Unique ID of the item.</param>
-        /// <returns>Status whether the item is in inventory.</returns>
-        public bool ContainsItem(string guid)
-        {
-            if (carryingItems.Count > 0)
-            {
-                foreach (var item in carryingItems)
-                {
-                    if (item.Key.ItemGuid == guid)
-                        return true;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Check if the item coordinates are in the container view.
-        /// </summary>
-        /// <param name="isContainer">Result if the coordinates of the item are in the container view.</param>
-        /// <returns>Result if the coordinates are not overflowned.</returns>
-        public bool IsContainerCoords(int x, int y)
-        {
-            if (y >= 0 && x >= 0 && x < MaxSlotXY.x && y < MaxSlotXY.y)
-                return slotArray[y, x] == SlotType.Container;
-
-            return false;
-        }
-
-        /// <summary>
-        /// Check if the item coordinates are valid.
-        /// </summary>
-        public bool IsCoordsValid(int x, int y, int width, int height)
-        {
-            if (x < 0 || y < 0 || 
-                x >= MaxSlotXY.x || y >= MaxSlotXY.y ||
-                x + (width - 1) >= MaxSlotXY.x || y + (height - 1) >= MaxSlotXY.y)
-                return false;
-
-            SlotType prevType = slotArray[y, x];
-            for (int yy = y; yy < y + height; yy++)
-            {
-                for (int xx = x; xx < x + width; xx++)
-                {
-                    SlotType currType = slotArray[yy, xx];
-
-                    if (prevType != currType || 
-                        prevType == SlotType.Restricted ||
-                        currType == SlotType.Restricted) 
-                        return false;
-
-                    prevType = currType;
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Check if the item has a combination partner in the inventory.
-        /// </summary>
-        public int CheckCombinePartner(InventoryItem invItem)
-        {
-            int combinePartners = 0;
-
-            foreach (var item in carryingItems)
-            {
-                if (item.Key.ItemGuid == invItem.ItemGuid)
-                    continue;
-
-                foreach (var itemCombine in invItem.Item.CombineSettings)
-                {
-                    if (itemCombine.combineWithID == item.Key.ItemGuid)
-                        if (!itemCombine.eventAfterCombine)
-                            combinePartners++;
-                }
-            }
-
-            return combinePartners;
-        }
-
-        /// <summary>
-        /// Check if the currently selected inventory item is the currently equipped player item combination partner.
-        /// </summary>
-        public bool CheckCombinePlayerItem(InventoryItem invItem)
-        {
-            if (playerItems.IsAnyEquipped)
-            {
-                foreach (var itemCombine in invItem.Item.CombineSettings)
-                {
-                    var playerItem = items[itemCombine.combineWithID];
-                    int playerItemIndex = playerItem.UsableSettings.playerItemIndex;
-
-                    if (playerItems.CurrentItemIndex == playerItemIndex)
-                        return true;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Check if the currently equipped player item can be combined.
-        /// </summary>
-        public bool CheckPlayerItemCanCombine()
-        {
-            if (playerItems.IsAnyEquipped)
-            {
-                int playerItemIndex = playerItems.CurrentItemIndex;
-                var playerItem = playerItems.PlayerItems[playerItemIndex];
-                return playerItem.CanCombine();
-            }
-
-            return false;
-        }
-
         #region Events
         public void ShowContextMenu(bool show, InventoryItem invItem = null)
         {
@@ -1189,11 +939,7 @@ namespace UHFPS.Runtime
                 contextMenu.contextExamine.gameObject.SetActive(examine);
 
                 // combine button
-                int combinePartners = CheckCombinePartner(invItem);
-                bool combinePlayerItem = CheckCombinePlayerItem(invItem);
-                bool playerItemCombinable = CheckPlayerItemCanCombine();
-
-                bool combineEnabled = playerItemCombinable && combinePlayerItem || !combinePlayerItem && combinePartners > 0;
+                bool combineEnabled = CheckAndRegisterCombinePartners(invItem);
                 bool combine = item.Settings.isCombinable && !invItem.isContainerItem && !itemSelector;
                 float combineAlpha = combineEnabled ? 1f : contextMenu.disabledAlpha;
 
@@ -1251,6 +997,7 @@ namespace UHFPS.Runtime
         {
             ShowContextMenu(false);
             ShowInventoryPrompt(false, null);
+            combinePartners.Clear();
 
             if (bindShortcut)
             {
@@ -1299,6 +1046,7 @@ namespace UHFPS.Runtime
             inventorySelector = null;
             activeItem = null;
 
+            combinePartners.Clear();
             gameManager.ShowControlsInfo(false, null);
             ShowInventoryPrompt(false, null, true);
             ShowContextMenu(false);
@@ -1306,7 +1054,7 @@ namespace UHFPS.Runtime
         }
         #endregion
 
-        private InventoryItem CreateItem(string guid, ushort quantity, ItemCustomData customData)
+        private InventoryItem CreateItem(string guid, int quantity, ItemCustomData customData)
         {
             Item item = items[guid];
 
@@ -1315,7 +1063,7 @@ namespace UHFPS.Runtime
                 InventoryItem inventoryItem = CreateItem(new ItemCreationData()
                 {
                     itemGuid = guid,
-                    quantity = quantity,
+                    quantity = (ushort)quantity,
                     orientation = space.orientation,
                     coords = new Vector2Int(space.x, space.y),
                     customData = customData,
@@ -1350,7 +1098,9 @@ namespace UHFPS.Runtime
             rect.sizeDelta = new Vector2(width, height);
             rect.localScale = Vector3.one;
 
-            RectTransform slot = itemCreationData.slotsSpace[itemCreationData.coords.y, itemCreationData.coords.x].GetComponent<RectTransform>();
+            Vector2Int coords = itemCreationData.coords;
+            RectTransform slot = itemCreationData.slotsSpace[coords.y, coords.x].GetComponent<RectTransform>();
+
             Vector2 offset = inventoryItem.GetOrientationOffset();
             Vector2 position = new Vector2(slot.localPosition.x, slot.localPosition.y) + offset;
             rect.anchoredPosition = position;
@@ -1366,67 +1116,6 @@ namespace UHFPS.Runtime
             });
 
             return inventoryItem;
-        }
-
-        private void AddItemToFreeSpace(FreeSpace space, InventoryItem inventoryItem)
-        {
-            Item item = inventoryItem.Item;
-            int maxY = item.Height, maxX = item.Width;
-
-            if (space.orientation == Orientation.Vertical)
-            {
-                maxY = item.Width;
-                maxX = item.Height;
-            }
-
-            InventorySlot[] occupiedSlots = new InventorySlot[maxY * maxX];
-            int slotIndex = 0;
-
-            for (int y = space.y; y < space.y + maxY; y++)
-            {
-                for (int x = space.x; x < space.x + maxX; x++)
-                {
-                    InventorySlot slot = slots[y, x];
-                    slot.itemInSlot = inventoryItem;
-                    occupiedSlots[slotIndex++] = slot;
-                }
-            }
-
-            carryingItems.Add(inventoryItem, occupiedSlots);
-        }
-
-        private bool CheckSpace(ushort width, ushort height, out FreeSpace slotSpace)
-        {
-            for (int y = 0; y < SlotXY.y; y++)
-            {
-                for (int x = 0; x < SlotXY.x; x++)
-                {
-                    if (width == height)
-                    {
-                        if (CheckSpaceFromPosition(x, y, width, height))
-                        {
-                            slotSpace = new FreeSpace(x, y, Orientation.Horizontal);
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        if (CheckSpaceFromPosition(x, y, width, height))
-                        {
-                            slotSpace = new FreeSpace(x, y, Orientation.Horizontal);
-                            return true;
-                        }
-                        else if (CheckSpaceFromPosition(x, y, height, width))
-                        {
-                            slotSpace = new FreeSpace(x, y, Orientation.Vertical);
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            slotSpace = new FreeSpace();
-            return false;
         }
 
         public StorableCollection OnCustomSave()

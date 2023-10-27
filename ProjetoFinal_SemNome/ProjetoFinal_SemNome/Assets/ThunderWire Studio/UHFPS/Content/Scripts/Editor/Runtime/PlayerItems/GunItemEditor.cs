@@ -19,17 +19,29 @@ namespace UHFPS.Editors
                 EditorGUILayout.Space();
 
                 Properties.Draw("GunName");
-                Properties.Draw("<ItemObject>k__BackingField");
-                Properties.Draw("SurfaceDetails");
-                Properties.Draw("SurfaceDetection");
+                Properties.DrawBacking("ItemObject");
                 Properties.Draw("WeaponType");
                 Properties.Draw("RaycastMask");
 
                 EditorGUILayout.Space();
-                EditorGUILayout.LabelField("Inventory", EditorStyles.boldLabel);
-                Properties.Draw("GunInventoryItem");
-                Properties.Draw("AmmoInventoryItem");
-                Properties.Draw("FlashlightAttachmentItem");
+                EditorGUILayout.BeginVertical(GUI.skin.box);
+                {
+                    EditorGUILayout.LabelField("Surface", EditorStyles.boldLabel);
+                    Properties.Draw("SurfaceDefinitionSet");
+                    Properties.Draw("SurfaceDetection");
+                    Properties.Draw("FleshTag");
+                }
+                EditorGUILayout.EndVertical();
+
+                EditorGUILayout.Space(2f);
+                EditorGUILayout.BeginVertical(GUI.skin.box);
+                {
+                    EditorGUILayout.LabelField("Inventory", EditorStyles.boldLabel);
+                    Properties.Draw("GunInventoryItem");
+                    Properties.Draw("AmmoInventoryItem");
+                    Properties.Draw("FlashlightAttachmentItem");
+                }
+                EditorGUILayout.EndVertical();
 
                 EditorGUILayout.Space();
                 EditorGUILayout.LabelField("Gun Stats", EditorStyles.boldLabel);
@@ -91,8 +103,19 @@ namespace UHFPS.Editors
 
                 Rect totalRect = EditorGUILayout.GetControlRect(true, height * 3);
                 totalRect.yMin += height * 2 / 2;
+
                 Rect labelRect = EditorGUI.PrefixLabel(totalRect, new GUIContent("Damage Dropoff"), EditorStyles.boldLabel);
                 labelRect.height = height;
+
+                Rect distanceLabelRect = labelRect;
+                distanceLabelRect.y -= (labelRect.height / 2) + (height / 2);
+                distanceLabelRect.xMin = totalRect.xMin;
+                EditorGUI.LabelField(distanceLabelRect, "Distance", EditorStyles.miniLabel);
+
+                Rect damageLabelRect = labelRect;
+                damageLabelRect.y += (labelRect.height / 2) + (height / 2);
+                damageLabelRect.xMin = totalRect.xMin;
+                EditorGUI.LabelField(damageLabelRect, "Damage", EditorStyles.miniLabel);
 
                 labelRect.width -= height;
                 if (Event.current.type == EventType.Repaint)

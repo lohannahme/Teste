@@ -36,6 +36,7 @@ namespace UHFPS.Runtime
         private PlayerItemsManager playerItems;
         private GameManager gameManager;
 
+        private bool isActive;
         private bool isCameraView;
         private CCTV_Camera currentCamera;
 
@@ -67,7 +68,7 @@ namespace UHFPS.Runtime
         {
             if (isCameraView)
             {
-                if (InputManager.ReadButtonOnce(GetInstanceID(), Controls.EXAMINE))
+                if (isActive && InputManager.ReadButtonOnce(GetInstanceID(), Controls.EXAMINE))
                     SwitchBack();
 
                 if (Cameras.Length > 0 && InputManager.ReadInputOnce(this, Controls.AXIS_ARROWS, out Vector2 axis))
@@ -85,31 +86,39 @@ namespace UHFPS.Runtime
             if (CameraPivot == CameraPivotEnum.Vertical || CameraPivot == CameraPivotEnum.Both)
             {
                 Transform vertical = currentCamera.VerticalJoint;
-                MinMax verticalLimits = currentCamera.VerticalLimits;
-                Axis verticalAxis = currentCamera.VerticalAxis;
-                Vector3 verticalDir = verticalAxis.Convert();
 
-                float currentVerticalAngle = vertical.localEulerAngles.Component(verticalAxis);
-                float desiredVerticalAngle = currentVerticalAngle - lookDelta.y * CameraSensitivity;
-                desiredVerticalAngle = ClampAngle(desiredVerticalAngle, verticalLimits.RealMin, verticalLimits.RealMax);
+                if (vertical != null)
+                {
+                    MinMax verticalLimits = currentCamera.VerticalLimits;
+                    Axis verticalAxis = currentCamera.VerticalAxis;
+                    Vector3 verticalDir = verticalAxis.Convert();
 
-                // apply the rotation
-                vertical.localRotation = Quaternion.AngleAxis(desiredVerticalAngle, verticalDir) * Quaternion.identity;
+                    float currentVerticalAngle = vertical.localEulerAngles.Component(verticalAxis);
+                    float desiredVerticalAngle = currentVerticalAngle - lookDelta.y * CameraSensitivity;
+                    desiredVerticalAngle = ClampAngle(desiredVerticalAngle, verticalLimits.RealMin, verticalLimits.RealMax);
+
+                    // apply the rotation
+                    vertical.localRotation = Quaternion.AngleAxis(desiredVerticalAngle, verticalDir) * Quaternion.identity;
+                }
             }
 
             if (CameraPivot == CameraPivotEnum.Horizontal || CameraPivot == CameraPivotEnum.Both)
             {
                 Transform horizontal = currentCamera.HorizontalJoint;
-                MinMax horizontalLimits = currentCamera.HorizontalLimits;
-                Axis horizontalAxis = currentCamera.HorizontalAxis;
-                Vector3 horizontalDir = horizontalAxis.Convert();
 
-                float currentHorizontalAngle = horizontal.localEulerAngles.Component(horizontalAxis);
-                float desiredHorizontalAngle = currentHorizontalAngle + lookDelta.x * CameraSensitivity;
-                desiredHorizontalAngle = ClampAngle(desiredHorizontalAngle, horizontalLimits.RealMin, horizontalLimits.RealMax);
+                if (horizontal != null)
+                {
+                    MinMax horizontalLimits = currentCamera.HorizontalLimits;
+                    Axis horizontalAxis = currentCamera.HorizontalAxis;
+                    Vector3 horizontalDir = horizontalAxis.Convert();
 
-                // apply the rotation
-                horizontal.localRotation = Quaternion.AngleAxis(desiredHorizontalAngle, horizontalDir) * Quaternion.identity;
+                    float currentHorizontalAngle = horizontal.localEulerAngles.Component(horizontalAxis);
+                    float desiredHorizontalAngle = currentHorizontalAngle + lookDelta.x * CameraSensitivity;
+                    desiredHorizontalAngle = ClampAngle(desiredHorizontalAngle, horizontalLimits.RealMin, horizontalLimits.RealMax);
+
+                    // apply the rotation
+                    horizontal.localRotation = Quaternion.AngleAxis(desiredHorizontalAngle, horizontalDir) * Quaternion.identity;
+                }
             }
         }
 
@@ -128,7 +137,7 @@ namespace UHFPS.Runtime
             {
                 if (outputTexture == null)
                 {
-                    outputTexture = new RenderTexture(OutputTextureSize.x, OutputTextureSize.y, 24);
+                    outputTexture = new(OutputTextureSize.x, OutputTextureSize.y, 24);
                     outputTexture.name = "CameraLiveFeed";
                     outputTexture.Create();
                 }
@@ -170,7 +179,7 @@ namespace UHFPS.Runtime
                 return;
 
             playerPresence.FreezePlayer(true);
-            playerPresence.SwitchActiveCamera(currentCamera.VirtualCamera.gameObject, FadeViewSpeed, OnBackgroundFade);
+            playerPresence.SwitchActiveCamera(currentCamera.VirtualCamera.gameObject, FadeViewSpeed, OnBackgroundFade, () => { isActive = true; });
             playerItems.IsItemsUsable = false;
         }
 
@@ -181,6 +190,8 @@ namespace UHFPS.Runtime
                 if (CameraFeed == CameraFeedEnum.StaticFeed) SetMonitorCameraOutput();
                 playerPresence.SwitchToPlayerCamera(FadeViewSpeed, OnBackgroundFade);
             }
+
+            isActive = false;
         }
 
         private void OnBackgroundFade()
@@ -215,13 +226,13 @@ namespace UHFPS.Runtime
             Camera camera = currentCamera.LiveCamera;
             camera.gameObject.SetActive(true);
 
-            RenderTexture renderTexture = new RenderTexture(OutputTextureSize.x, OutputTextureSize.y, 24);
+            RenderTexture renderTexture = new(OutputTextureSize.x, OutputTextureSize.y, 24);
             renderTexture.antiAliasing = 8;
 
             camera.targetTexture = renderTexture;
             camera.Render();
 
-            Texture2D texture = new Texture2D(OutputTextureSize.x, OutputTextureSize.y, TextureFormat.RGB24, false);
+            Texture2D texture = new(OutputTextureSize.x, OutputTextureSize.y, TextureFormat.RGB24, false);
             RenderTexture.active = renderTexture;
 
             texture.ReadPixels(new Rect(0, 0, OutputTextureSize.x, OutputTextureSize.y), 0, 0);

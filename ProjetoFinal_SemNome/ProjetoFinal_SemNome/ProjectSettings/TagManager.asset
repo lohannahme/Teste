@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Flesh
   - NPC_Morador
+  - "Pr\xE9dio"
+  - Apartamento
+  - Rua
   layers:
   - Default
   - TransparentFX

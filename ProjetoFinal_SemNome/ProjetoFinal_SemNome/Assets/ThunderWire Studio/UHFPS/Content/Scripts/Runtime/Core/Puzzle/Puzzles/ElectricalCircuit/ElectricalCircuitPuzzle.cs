@@ -35,6 +35,8 @@ namespace UHFPS.Runtime
         public sealed class PowerInputEvents
         {
             public PowerComponent PowerComponent;
+            public ElectricalCircuitLights InputLight;
+
             public UnityEvent<int> OnConnected;
             public UnityEvent<int> OnDisconnected;
         }
@@ -65,6 +67,15 @@ namespace UHFPS.Runtime
 
         private AudioSource audioSource;
 
+        private void OnValidate()
+        {
+            if(PowerFlow == null || PowerFlow.Length <= 0)
+                PowerFlow = new PowerComponent[Rows * Columns];
+
+            if (ComponentsFlow == null || ComponentsFlow.Length <= 0)
+                ComponentsFlow = new ComponentFlow[Rows * Columns];
+        }
+
         public override void Awake()
         {
             base.Awake();
@@ -73,7 +84,7 @@ namespace UHFPS.Runtime
 
         private void Start()
         {
-            if (!SaveGameManager.IsGameJustLoaded)
+            if (!SaveGameManager.GameWillLoad)
             {
                 PowerAllOutputs();
                 CheckAllInputs();
@@ -109,8 +120,8 @@ namespace UHFPS.Runtime
 
         public void CheckAllInputs()
         {
-            Dictionary<int, List<int>> connectPairs = new();
             Dictionary<PowerComponent, ElectricalCircuitComponent> inputs = new();
+            Dictionary<int, List<int>> outputPairs = new();
             int inputsCount = 0;
 
             for (int i = 0; i < PowerFlow.Length; i++)
@@ -118,19 +129,19 @@ namespace UHFPS.Runtime
                 PowerComponent powerComponent = PowerFlow[i];
                 if (powerComponent.PowerType == PowerType.Output)
                 {
-                    if (!connectPairs.ContainsKey(powerComponent.ConnectPowerID))
+                    if (!outputPairs.ContainsKey(powerComponent.ConnectPowerID))
                     {
-                        connectPairs.Add(powerComponent.ConnectPowerID, new() { powerComponent.PowerID });
+                        outputPairs[powerComponent.ConnectPowerID] = new List<int> { powerComponent.PowerID };
                     }
                     else
                     {
-                        connectPairs[powerComponent.ConnectPowerID].Add(powerComponent.PowerID);
+                        outputPairs[powerComponent.ConnectPowerID].Add(powerComponent.PowerID);
                     }
                 }
                 else if (powerComponent.PowerType == PowerType.Input)
                 {
                     ElectricalCircuitComponent component = Components[i];
-                    inputs.Add(powerComponent, component);
+                    inputs[powerComponent] = component;
                     inputsCount++;
                 }
             }
@@ -138,46 +149,50 @@ namespace UHFPS.Runtime
             int connectedInputs = 0;
             foreach (var input in inputs)
             {
-                if (connectPairs.TryGetValue(input.Key.PowerID, out var requiredConnections))
+                PowerInputEvents events = InputEvents.FirstOrDefault(x =>
                 {
-                    PowerInputEvents events = InputEvents.FirstOrDefault(x => x.PowerComponent.PowerID == input.Key.PowerID);
-                    PartDirection oppositeDIrection = ToOppositeDirection(input.Key.PowerDirection);
-                    var oppositeFlow = input.Value.GetOppositePowerFlow(oppositeDIrection);
-                    int reqCount = requiredConnections.Count;
+                    var powerComponent = x.PowerComponent;
+                    return powerComponent.PowerType == PowerType.Input
+                        && powerComponent.PowerID == input.Key.PowerID;
+                });
 
-                    if (oppositeFlow != null)
+                if (events == null) 
+                    continue;
+
+                PartDirection oppositeDirection = ToOppositeDirection(input.Key.PowerDirection);
+                var oppositeFlow = input.Value.GetOppositePowerFlow(oppositeDirection);
+                int reqCount = outputPairs.TryGetValue(input.Key.PowerID, out var requiredConnections) ? requiredConnections.Count : 0;
+
+                int connected = 0;
+                if (oppositeFlow != null && requiredConnections != null)
+                {
+                    foreach (var connection in requiredConnections)
                     {
-                        int connected = 0;
-
-                        foreach (var connection in requiredConnections)
+                        if (oppositeFlow.PowerFlows.Contains(connection))
                         {
-                            if (oppositeFlow.PowerFlows.Contains(connection))
-                            {
-                                events.OnConnected?.Invoke(connection);
-                                connected++;
-                            }
-                            else
-                            {
-                                events.OnDisconnected?.Invoke(connection);
-                            }
+                            if (events.InputLight != null)
+                                events.InputLight.OnConnected(connection);
+
+                            events.OnConnected?.Invoke(connection);
+                            connected++;
                         }
-
-                        if (connected == reqCount)
-                            connectedInputs++;
-                    }
-                    else
-                    {
-                        foreach (var connection in requiredConnections)
+                        else
                         {
-                            if(events != null) events.OnDisconnected?.Invoke(connection);
+                            if (events.InputLight != null)
+                                events.InputLight.OnDisconnected(connection);
+
+                            events.OnDisconnected?.Invoke(connection);
                         }
                     }
                 }
+
+                if (connected == reqCount)
+                    connectedInputs++;
             }
 
-            if(connectedInputs == inputsCount)
+            if (connectedInputs == inputsCount)
             {
-                if (!SaveGameManager.IsGameJustLoaded)
+                if (!SaveGameManager.GameWillLoad)
                     audioSource.PlayOneShotSoundClip(PowerConnected);
 
                 if (DisableWhenConnected)
@@ -190,9 +205,9 @@ namespace UHFPS.Runtime
                 OnConnected?.Invoke();
                 isConnected = true;
             }
-            else if(isConnected)
+            else if (isConnected)
             {
-                if (!SaveGameManager.IsGameJustLoaded)
+                if (!SaveGameManager.GameWillLoad)
                     audioSource.PlayOneShotSoundClip(PowerDisconnected);
 
                 OnDisconnected?.Invoke();
@@ -278,7 +293,7 @@ namespace UHFPS.Runtime
 
         public StorableCollection OnSave()
         {
-            StorableCollection saveableBuffer = new StorableCollection();
+            StorableCollection saveableBuffer = new();
 
             for (int i = 0; i < Components.Count; i++)
             {

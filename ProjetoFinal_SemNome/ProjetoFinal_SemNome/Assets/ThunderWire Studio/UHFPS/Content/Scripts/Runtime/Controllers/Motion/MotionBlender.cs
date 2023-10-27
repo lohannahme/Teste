@@ -1,3 +1,4 @@
+using System.Reactive.Disposables;
 using UHFPS.Scriptable;
 using UnityEngine;
 
@@ -11,6 +12,8 @@ namespace UHFPS.Runtime
         public MotionPreset Instance;
         public bool IsInitialized;
 
+        public CompositeDisposable Disposables = new();
+
         private float weight = 1f;
         public float Weight
         {
@@ -22,14 +25,15 @@ namespace UHFPS.Runtime
         {
             Preset = preset;
             Instance = Object.Instantiate(preset);
-            Instance.Initialize(component, transform);
+            Instance.Initialize(this, component, transform);
             IsInitialized = true;
         }
 
         public void Dispose()
         {
             IsInitialized = false;
-            if(Preset) Preset.Reset();
+            Disposables.Dispose();
+            if (Preset) Preset.Reset();
             Object.Destroy(Instance);
         }
 

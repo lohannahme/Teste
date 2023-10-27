@@ -114,7 +114,7 @@ namespace UHFPS.Runtime
             _startTransform = _start.transform;
             CableStart = isWorldPos ? transform.InverseTransformPoint(start) : start;
 
-            ProceduralCableEnd firstEnd = _start.AddComponent<ProceduralCableEnd>();
+            ProceduralCablePoint firstEnd = _start.AddComponent<ProceduralCablePoint>();
             firstEnd.proceduralCable = this;
 
             GameObject _end = new GameObject("CableEnd");
@@ -123,7 +123,7 @@ namespace UHFPS.Runtime
             _endTransform = _end.transform;
             CableEnd = isWorldPos ? transform.InverseTransformPoint(end) : end;
 
-            ProceduralCableEnd secondEnd = _end.AddComponent<ProceduralCableEnd>();
+            ProceduralCablePoint secondEnd = _end.AddComponent<ProceduralCablePoint>();
             secondEnd.proceduralCable = this;
 
             cableGenerated = true;

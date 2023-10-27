@@ -60,9 +60,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71c1514a6bd24e1e882cebbe1904ce04, type: 3}
   m_Name: RobotoCondensed-Bold SDF
   m_EditorClassIdentifier: 
-  hashCode: -1757824676
+  hashCode: -1509993491
   material: {fileID: 9108110975851271829}
-  materialHashCode: -232945924
+  materialHashCode: -2114748371
   m_Version: 1.1.0
   m_SourceFontFileGUID: c32971979b12887428ecdd85da65047a
   m_SourceFontFile_EditorRef: {fileID: 12800000, guid: c32971979b12887428ecdd85da65047a, type: 3}

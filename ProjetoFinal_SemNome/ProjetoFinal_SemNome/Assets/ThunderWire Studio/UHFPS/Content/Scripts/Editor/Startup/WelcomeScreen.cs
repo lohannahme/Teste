@@ -6,9 +6,9 @@ namespace UHFPS.Editors
 {
     public class WelcomeScreen : EditorWindow
     {
-        public const string UHFPS_VERSION = "1.1b";
+        public const string UHFPS_VERSION = "1.2";
         const string SHOWN_KEY = "UHFPS.WelcomeState";
-        const string LOGO = "uhfps_logo";
+        const string LOGO = "uhfps_welcome";
 
         public static GUIStyle wordWrappedLabelCenter
         {
@@ -71,14 +71,6 @@ namespace UHFPS.Editors
             GUILayout.BeginArea(rect);
             {
                 Rect logoRect = GUILayoutUtility.GetRect(1, 70);
-                Rect bgRect = logoRect;
-                bgRect.height = 70;
-                logoRect.y += 10f;
-                EditorGUI.DrawRect(bgRect, bgColor);
-
-                logoRect.x = rect.width / 2 - 220 / 2f + 3f;
-                logoRect.width = 220;
-                logoRect.height = 50;
                 Texture2D uhfpsLogo = Resources.Load<Texture2D>(LOGO);
                 GUI.DrawTexture(logoRect, uhfpsLogo);
 

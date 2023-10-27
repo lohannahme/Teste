@@ -31,6 +31,7 @@ namespace UHFPS.Input
         private InputActionRebindingExtensions.RebindingOperation rebindOperation;
         private readonly Dictionary<string, bool> toggledActions = new();
         private readonly List<string> pressedActions = new();
+        private bool isApplyPending;
 
         public InputActionAsset inputActions;
         public InputSpritesAsset inputSpritesAsset;
@@ -462,6 +463,7 @@ namespace UHFPS.Input
 
             if (Instance.debugMode) Debug.Log("[InputManager] Bindings Applied");
             Instance.OnApply.OnNext(true);
+            Instance.isApplyPending = false;
         }
 
         /// <summary>
@@ -493,6 +495,7 @@ namespace UHFPS.Input
 
             if (Instance.debugMode) Debug.Log("[InputManager] Bindings Applied");
             Instance.OnApply.OnNext(true);
+            Instance.isApplyPending = false;
         }
 
         /// <summary>
@@ -500,6 +503,9 @@ namespace UHFPS.Input
         /// </summary>
         public static void DiscardInputRebindOverrides()
         {
+            if (!Instance.isApplyPending)
+                return;
+
             if (Instance.debugMode) Debug.Log("[InputManager] Bindings Discarded");
             Instance.preparedRebinds.Clear();
             Instance.OnApply.OnNext(false);
@@ -510,8 +516,10 @@ namespace UHFPS.Input
         /// </summary>
         public static void ResetInputsToDefaults()
         {
-            Instance.preparedRebinds.Clear();
+            if (!Instance.isApplyPending)
+                return;
 
+            Instance.preparedRebinds.Clear();
             foreach (var map in Instance.actionMap)
             {
                 foreach (var action in map.Value.actions)
@@ -529,19 +537,15 @@ namespace UHFPS.Input
             rebindOperation = action.PerformInteractiveRebinding(bindingIndex)
                 .OnApplyBinding((operation, path) =>
                 {
-                    Debug.Log("Rebind Path: " + path);
-
                     // if there is a prepared binding with the same override path
                     if (AnyPreparedRebind(path, action, bindingIndex, out var dupPath))
                     {
-                        Debug.Log("Any Prepared");
                         PrepareRebind(new(action, bindingIndex, path));
                         PrepareRebind(new(dupPath.action, dupPath.bindingIndex, NULL));
                     }
                     // if a binding path with the same override path exists in the action map
                     else if (AnyBindingPath(path, action, bindingIndex, out var duplicate))
                     {
-                        Debug.Log("Any Binding");
                         PrepareRebind(new(action, bindingIndex, path));
                         if (!preparedRebinds.Any(x => x.bindingIndex == duplicate.bindingIndex))
                             PrepareRebind(new(duplicate.action, duplicate.bindingIndex, NULL));
@@ -549,7 +553,6 @@ namespace UHFPS.Input
                     // normal rebind
                     else
                     {
-                        Debug.Log("Normal");
                         PrepareRebind(new(action, bindingIndex, path));
                     }
                 })
@@ -625,6 +628,7 @@ namespace UHFPS.Input
 
             // send prepare rebind event
             OnRebindPrepare.OnNext(context);
+            isApplyPending = true;
         }
 
         private XmlDocument WriteOverridesToXML()

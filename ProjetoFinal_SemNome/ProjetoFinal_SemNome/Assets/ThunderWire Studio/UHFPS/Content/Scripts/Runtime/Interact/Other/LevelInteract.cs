@@ -7,18 +7,37 @@ namespace UHFPS.Runtime
     [Docs("https://docs.twgamesdev.com/uhfps/guides/save-load-manager/previous-scene-persistency")]
     public class LevelInteract : MonoBehaviour, IInteractStart
     {
-        public enum LevelType { NextLevel, WorldState, PlayerData }
+        public enum TriggerTypeEnum { Trigger, Interact, Event }
+        public enum LevelTypeEnum { NextLevel, WorldState, PlayerData }
 
-        public LevelType LevelLoadType = LevelType.NextLevel;
+        public TriggerTypeEnum TriggerType = TriggerTypeEnum.Interact;
+        public LevelTypeEnum LevelType = LevelTypeEnum.NextLevel;
         public string NextLevelName;
 
         public bool CustomTransform;
         public Transform TargetTransform;
         public float LookUpDown;
 
+        private void OnTriggerEnter(Collider other)
+        {
+            if (TriggerType != TriggerTypeEnum.Trigger)
+                return;
+
+            if (other.CompareTag("Player"))
+                SwitchLevel();
+        }
+
         public void InteractStart()
         {
-            if (LevelLoadType == LevelType.PlayerData)
+            if (TriggerType != TriggerTypeEnum.Interact)
+                return;
+
+            SwitchLevel();
+        }
+
+        public void SwitchLevel()
+        {
+            if (LevelType == LevelTypeEnum.PlayerData)
             {
                 SaveGameManager.SavePlayer();
                 GameManager.Instance.LoadNextLevel(NextLevelName);
@@ -27,7 +46,7 @@ namespace UHFPS.Runtime
             {
                 SaveGameManager.SaveGame(TargetTransform.position, new Vector2(TargetTransform.eulerAngles.y, LookUpDown), () =>
                 {
-                    if (LevelLoadType == LevelType.NextLevel)
+                    if (LevelType == LevelTypeEnum.NextLevel)
                         GameManager.Instance.LoadNextLevel(NextLevelName);
                     else
                         GameManager.Instance.LoadNextWorld(NextLevelName);
@@ -37,7 +56,7 @@ namespace UHFPS.Runtime
             {
                 SaveGameManager.SaveGame(() =>
                 {
-                    if (LevelLoadType == LevelType.NextLevel)
+                    if (LevelType == LevelTypeEnum.NextLevel)
                         GameManager.Instance.LoadNextLevel(NextLevelName);
                     else
                         GameManager.Instance.LoadNextWorld(NextLevelName);

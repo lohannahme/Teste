@@ -113,7 +113,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   m_Settings:
-    technique: 2
+    technique: 0
     maxDrawDistance: 1000
     decalLayers: 0
     dBufferSettings:
@@ -302,9 +302,16 @@ MonoBehaviour:
   - rid: 9014944904690532359
   - rid: 9014944904690532360
   - rid: 9014944906324475909
+  - rid: 8816070693907595265
   references:
     version: 2
     RefIds:
+    - rid: 8816070693907595265
+      type: {class: RaindropFeature, ns: UHFPS.Rendering, asm: Assembly-CSharp}
+      data:
+        Enabled: 1
+        RenderPassEvent: 500
+        EffectMaterial: {fileID: 2100000, guid: da9af9f596670ab4ebf238f7ad1bf66d, type: 2}
     - rid: 9014944904690532358
       type: {class: ScanlinesFeature, ns: UHFPS.Rendering, asm: Assembly-CSharp}
       data:

@@ -30,6 +30,7 @@ namespace UHFPS.Editors
 
         // ignore colliders
         private SerializedProperty ignoreColliders;
+        private SerializedProperty ignorePlayerCollider;
         private ReorderableList ignoreCollidersList;
 
         // animation triggers
@@ -91,6 +92,8 @@ namespace UHFPS.Editors
             lockedText = serializedObject.FindProperty("lockedText");
 
             ignoreColliders = serializedObject.FindProperty("ignoreColliders");
+            ignorePlayerCollider = serializedObject.FindProperty("ignorePlayerCollider");
+
             ignoreCollidersList = new ReorderableList(serializedObject, ignoreColliders, true, false, true, true);
             ignoreCollidersList.drawElementCallback += (rect, index, isActive, isFocused) =>
             {
@@ -464,6 +467,7 @@ namespace UHFPS.Editors
             EditorGUILayout.Space(1f);
             if (EditorDrawing.BeginFoldoutBorderLayout(ignoreColliders, new GUIContent("Ignore Colliders")))
             {
+                EditorGUILayout.PropertyField(ignorePlayerCollider);
                 ignoreCollidersList.DoLayoutList();
                 EditorDrawing.EndBorderHeaderLayout();
             }
@@ -607,7 +611,6 @@ namespace UHFPS.Editors
                 {
                     rotableProperties.Draw("rotationLimit");
                     rotableProperties.Draw("rotateAroundAxis");
-                    rotableProperties.Draw("rotationOffset");
                     EditorDrawing.EndBorderHeaderLayout();
                 }
 

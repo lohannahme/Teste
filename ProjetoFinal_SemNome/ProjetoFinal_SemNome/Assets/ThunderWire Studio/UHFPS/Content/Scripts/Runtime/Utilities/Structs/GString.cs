@@ -24,6 +24,20 @@ namespace UHFPS.Runtime
             NormalText = text;
         }
 
+        public GString(string gloc, string text)
+        {
+            OnTextChange = new();
+            GlocText = gloc;
+            NormalText = text;
+        }
+
+        public GString(GString copy)
+        {
+            OnTextChange = new();
+            GlocText = copy.GlocText;
+            NormalText = copy.NormalText;
+        }
+
         public string Value
         {
             get
